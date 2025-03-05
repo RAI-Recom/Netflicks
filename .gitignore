@@ -1,0 +1,5 @@
+*env
+*.log
+*.pyc
+*.pkl
+data/
