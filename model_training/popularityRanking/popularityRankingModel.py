@@ -1,14 +1,14 @@
 import pandas as pd
 import pickle
 
-ratings_file = "/home/Recomm-project/data/processed_rate_entries.csv"
-popularity_file = "/home/Recomm-project/model/popularityRanking/popular_movies.pkl"
+RATINGS_FILE = "/home/Recomm-project/data/processed_rate_entries.csv"
+POPULARITY_MODEL = "/home/Recomm-project/models/popular_movies.pkl"
 
 chunk_size = 500000  # Process data in chunks
 movie_ratings = {}
 
 # Read in chunks to handle large data
-for chunk in pd.read_csv(ratings_file, names=["user_id", "movie_title", "rating"], chunksize=chunk_size, skiprows=1):
+for chunk in pd.read_csv(RATINGS_FILE, names=["user_id", "movie_title", "rating"], chunksize=chunk_size, skiprows=1):
     for movie, rating in zip(chunk["movie_title"], chunk["rating"]):
         if movie not in movie_ratings:
             movie_ratings[movie] = []
@@ -30,7 +30,7 @@ def compute_popularity_scores(movie_ratings, m=50):
 popular_movies = compute_popularity_scores(movie_ratings)
 
 # Save computed scores
-with open(popularity_file, "wb") as f:
+with open(POPULARITY_MODEL, "wb") as f:
     pickle.dump(popular_movies, f)
 
-print(f"Processed and stored popular movies in {popularity_file}")
+print(f"Processed and stored popular movies in {POPULARITY_MODEL}")
