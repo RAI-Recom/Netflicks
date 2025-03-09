@@ -1,3 +1,5 @@
+### This script reads the live messages from the Kafka broker and writes them to a csv file.
+
 import os
 from kafka import KafkaConsumer
 
@@ -15,4 +17,4 @@ consumer = KafkaConsumer(
 print('Reading Kafka Broker')
 for message in consumer:
     message = message.value.decode()
-    os.system(f"echo {message} >> data/movie_logs.csv")
+    os.system(f"echo {message} >> ../data/movie_logs.csv")
