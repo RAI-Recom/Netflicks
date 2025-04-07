@@ -8,6 +8,8 @@ import psycopg2
 from psycopg2 import sql
 from typing import Dict, List, Any, Tuple, Optional
 import logging
+import os
+from dotenv import load_dotenv
 
 class DBManager:
     """
@@ -15,29 +17,30 @@ class DBManager:
     Handles connection management and data insertion operations.
     """
     
-    def __init__(self, host: str = 'localhost', port: int = 5432,
-                 user: str = 'user1', password: str = 'chicago', 
-                 database: str = 'netflicksdb'):
+    def __init__(self, host: str = 'localhost', port: int = 5432):
         """
         Initialize the database manager with connection parameters.
         
         Args:
             host: Database server hostname
             port: Database server port
-            user: Database username
-            password: Database password
-            database: Database name
         """
+        # Load environment variables from .env file
+        load_dotenv()
         self.connection_params = {
             'host': host,
             'port': port,
-            'user': user,
-            'password': password,
-            'database': database
+            'user': os.getenv('DB_USER'),  # Fetch username from .env
+            'password': os.getenv('DB_PASSWORD'),  # Fetch password from .env
+            'database': os.getenv('DB_NAME')  # Corrected to fetch the database name
         }
         self.conn = None
         self.cursor = None
         self.logger = self._setup_logger()
+        
+        # Connect to the database and create tables if they do not exist
+        if self.connect():
+            self.create_tables()
         
     def _setup_logger(self) -> logging.Logger:
         """Set up and configure logger for the DBManager to log errors only."""
@@ -86,6 +89,114 @@ class DBManager:
         """Context manager exit point."""
         self.disconnect()
         
+    def create_tables(self) -> None:
+        """Create necessary tables in the database."""
+        create_movies_table = """
+        CREATE TABLE IF NOT EXISTS movies (
+            movie_id SERIAL PRIMARY KEY,
+            movie_title_id TEXT NOT NULL,
+            title TEXT,
+            year INTEGER,
+            rating NUMERIC,
+            genres TEXT[],  -- To store an array of genres
+            plot TEXT,
+            duration INTEGER,  -- Renamed from runtime
+            directors TEXT,  -- To store the directors
+            cast TEXT,  -- To store the cast
+            votes INTEGER,  -- To store the number of votes
+            languages TEXT[],  -- To store an array of languages
+            country TEXT[],  -- To store an array of countries
+            release_date DATE,  -- To store the release date
+            poster TEXT,  -- To store the poster URL
+            UNIQUE (title, movie_title_id)
+        );
+        """
+
+        create_ratings_table = """
+        CREATE TABLE IF NOT EXISTS ratings (
+            rating_id SERIAL PRIMARY KEY,
+            user_id BIGINT NOT NULL,
+            movie_id INTEGER NOT NULL,
+            rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+            rated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+            FOREIGN KEY (movie_id) REFERENCES movies(movie_id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+        );
+        """
+
+        create_users_table = """
+        CREATE TABLE IF NOT EXISTS users (
+            user_id BIGINT NOT NULL PRIMARY KEY
+        );
+        """
+
+        create_watch_history_table = """
+        CREATE TABLE IF NOT EXISTS watch_history (
+            watch_id SERIAL PRIMARY KEY,
+            timestamp TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+            user_id BIGINT NOT NULL,
+            movie_id INTEGER NOT NULL,
+            watch_time TIMESTAMP WITHOUT TIME ZONE,
+            watched_minutes INTEGER,
+            FOREIGN KEY (movie_id) REFERENCES movies(movie_id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+        );
+        """
+
+        try:
+            self.cursor.execute(create_movies_table)
+            self.cursor.execute(create_ratings_table)
+            self.cursor.execute(create_users_table)
+            self.cursor.execute(create_watch_history_table)
+            self.conn.commit()
+            print("Tables created successfully.")
+            
+            # Create the function and trigger
+            self.create_function_and_trigger()
+            
+        except Exception as e:
+            self.conn.rollback()
+            self.logger.error(f"Error creating tables: {str(e)}")
+    
+    def create_function_and_trigger(self) -> None:
+        """Create function and trigger to ensure user and movie exist."""
+        create_function = """
+        CREATE OR REPLACE FUNCTION ensure_user_and_movie_exist() 
+        RETURNS TRIGGER AS $$
+        DECLARE 
+            default_title_id INTEGER := 1; -- Set a valid default if needed
+        BEGIN
+            -- Ensure user exists
+            IF NOT EXISTS (SELECT 1 FROM users WHERE user_id = NEW.user_id) THEN
+                INSERT INTO users(user_id) VALUES (NEW.user_id);
+            END IF;
+
+            -- Ensure movie exists with movie_title_id
+            IF NOT EXISTS (SELECT 1 FROM movies WHERE movie_id = NEW.movie_id) THEN
+                INSERT INTO movies(movie_id, movie_title_id) VALUES (NEW.movie_id, default_title_id);
+            END IF;
+
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+        """
+
+        create_trigger = """
+        CREATE TRIGGER trigger_ensure_user_movie
+        BEFORE INSERT ON ratings
+        FOR EACH ROW
+        EXECUTE FUNCTION ensure_user_and_movie_exist();
+        """
+
+        try:
+            self.cursor.execute(create_function)
+            self.cursor.execute(create_trigger)
+            self.conn.commit()
+            print("Function and trigger created successfully.")
+        except Exception as e:
+            self.conn.rollback()
+            self.logger.error(f"Error creating function or trigger: {str(e)}")
+    
     def insert_record(self, table: str, data: Dict[str, Any]) -> bool:
         """
         Insert a single record into the specified table.
