@@ -5,7 +5,7 @@ from sklearn.decomposition import TruncatedSVD
 from sklearn.neighbors import NearestNeighbors
 
 # Load dataset
-ratings_df = pd.read_csv("processed_data/hybrid_model_data.csv")
+ratings_df = pd.read_csv("data/hybrid_model_data.csv")
 explicit_ratings = ratings_df.dropna(subset=["rating_x"])
 
 import pandas as pd
