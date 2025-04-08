@@ -17,7 +17,7 @@
 | `plot`              | `text`                     |               |              |                   | `extended`  | A brief description of the plot.    |
 | `duration`          | `integer`                  |               |              |                   | `plain`     | Duration of the movie in minutes.   |
 | `directors`         | `text`                     |               |              |                   | `extended`  | Directors of the movie.              |
-| `cast`              | `text`                     |               |              |                   | `extended`  | Cast of the movie.                  |
+| `actors`            | `text`                     |               |              |                   | `extended`  | Cast of the movie.                  |
 | `votes`             | `integer`                  |               |              |                   | `plain`     | Number of votes for the movie.      |
 | `languages`         | `text[]`                   |               |              |                   | `extended`  | Array of languages associated with the movie. |
 | `country`           | `text[]`                   |               |              |                   | `extended`  | Array of countries associated with the movie. |
@@ -43,7 +43,7 @@
 | `user_id`           | `bigint`                   |               |              |                                            | `plain`     | ID of the user who made the rating. |
 | `movie_id`          | `integer`                  |               |              |                                            | `plain`     | ID of the movie being rated.        |
 | `rating`            | `integer`                  |               |              |                                            | `plain`     | Rating value (e.g., 1–5 stars).     |
-| `rated_at`          | `timestamp without time zone`|             |              | `now()`                                    | `plain`     | Timestamp when the rating was made. |
+| `updated_at`          | `timestamp without time zone`|             |              | `now()`                                    | `plain`     | Timestamp when the rating was made. |
 
 **Relationships**:
   - Foreign Keys:
@@ -76,10 +76,9 @@
 | **Column Name**    | **Data Type**               | **Collation** | **Nullable** | **Default Value**                          | **Storage** | **Description**                             |
 |---------------------|-----------------------------|---------------|--------------|--------------------------------------------|-------------|---------------------------------------------|
 | `watch_id`          | `integer`                  |               | `NOT NULL`   | `nextval('watch_history_watch_id_seq'::regclass)` | `plain`     | Unique identifier for each watch record.    |
-| `timestamp`         | `timestamp without time zone`|             |              |                                            | `plain`     | Timestamp when the watch record was created.|
+| `updated_at`         | `timestamp without time zone`|             |              |                                            | `plain`     | Timestamp when the watch record was created.|
 | `user_id`           | `bigint`                   |               |              |                                            | `plain`     | ID of the user who watched the movie.       |
 | `movie_id`          | `integer`                  |               |              |                                            | `plain`     | ID of the movie being watched.              |
-| `watch_time`        | `timestamp without time zone`|             |              |                                            | `plain`     | Timestamp indicating when the movie was watched. |
 | `watched_minutes`   | `integer`                  |               |              |                                            | `plain`     | Number of minutes the user watched the movie.|
 
 **Relationships**:

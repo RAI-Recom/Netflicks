@@ -1,8 +1,8 @@
 FROM python:3.10.12
 
 WORKDIR /app
-COPY apis/requirements.txt .
-COPY apis/server.py .
+COPY requirements.infer.txt .
+COPY api/server.py .
 COPY models/popular_movies.pkl models/
 COPY models/user_recommendations.pkl models/
 

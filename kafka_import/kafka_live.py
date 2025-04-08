@@ -2,12 +2,13 @@
 THIS FILE LISTENS TO KAFKA LIVE STREAM, PROCESSES THE DATA USING DATAFORMATTER, 
 AND STORES IT IN THE DATABASE.
 """
-
+import sys
+sys.path.append('.')
 
 import os
 from kafka import KafkaConsumer
 import logging
-from preprocessing.data_formatter import DataFormatting
+from preprocessing.data_formatter import DataFormatter
 from db.db_manager import DBManager
 import pandas as pd
 from typing import Dict, List
@@ -54,7 +55,7 @@ class KafkaStreamReader:
         self.output_file = output_file
         self.consumer = None
         self.logger = self._setup_logger()
-        self.data_formatter = DataFormatting()
+        self.data_formatter = DataFormatter()
         self.db_manager = DBManager()
         
     def _setup_logger(self) -> logging.Logger:
@@ -116,7 +117,7 @@ class KafkaStreamReader:
     
     def process_and_store_data(self, messages: List[str]) -> Dict[str, int]:
         """
-        Process messages using DataFormatting and store in PostgreSQL.
+        Process messages using DataFormatter and store in PostgreSQL.
         
         Args:
             messages: List of raw message strings
@@ -132,7 +133,7 @@ class KafkaStreamReader:
                 'request_id': range(len(messages))  # You might want to extract actual request IDs
             })
             
-            # Process data using DataFormatting
+            # Process data using DataFormatter
             data_df, rate_df = self.data_formatter.process_chunk(df)
             
             inserted_counts = {'data': 0, 'rate': 0}
@@ -142,7 +143,7 @@ class KafkaStreamReader:
                 data_values = [tuple(x) for x in data_df.values]
                 data_columns = list(data_df.columns)
                 inserted_counts['data'] = self.db_manager.insert_many(
-                    'data_entries',
+                    'watch_history',
                     data_columns,
                     data_values
                 )
@@ -152,7 +153,7 @@ class KafkaStreamReader:
                 rate_values = [tuple(x) for x in rate_df.values]
                 rate_columns = list(rate_df.columns)
                 inserted_counts['rate'] = self.db_manager.insert_many(
-                    'rate_entries',
+                    'ratings',
                     rate_columns,
                     rate_values
                 )

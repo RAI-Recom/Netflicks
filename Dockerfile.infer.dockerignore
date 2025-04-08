@@ -1,5 +1,5 @@
 *
-!apis/requirements.txt
-!apis/server.py
+!api/requirements.txt
+!api/server.py
 !models/popular_movies.pkl
 !models/user_recommendations.pkl

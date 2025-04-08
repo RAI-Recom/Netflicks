@@ -17,13 +17,14 @@ class DBManager:
     Handles connection management and data insertion operations.
     """
     
-    def __init__(self, host: str = 'localhost', port: int = 5432):
+    def __init__(self, host: str = 'localhost', port: int = 5432, schema: str = 'public'):
         """
         Initialize the database manager with connection parameters.
         
         Args:
             host: Database server hostname
             port: Database server port
+            schema: Database schema name (default is 'public')
         """
         # Load environment variables from .env file
         load_dotenv()
@@ -32,7 +33,8 @@ class DBManager:
             'port': port,
             'user': os.getenv('DB_USER'),  # Fetch username from .env
             'password': os.getenv('DB_PASSWORD'),  # Fetch password from .env
-            'database': os.getenv('DB_NAME')  # Corrected to fetch the database name
+            'database': os.getenv('DB_NAME'),  # Corrected to fetch the database name
+            'options': f'-c search_path={schema}'  # Set the schema
         }
         self.conn = None
         self.cursor = None
@@ -102,7 +104,7 @@ class DBManager:
             plot TEXT,
             duration INTEGER,  -- Renamed from runtime
             directors TEXT,  -- To store the directors
-            cast TEXT,  -- To store the cast
+            actors TEXT,  -- To store the actors
             votes INTEGER,  -- To store the number of votes
             languages TEXT[],  -- To store an array of languages
             country TEXT[],  -- To store an array of countries
@@ -118,7 +120,7 @@ class DBManager:
             user_id BIGINT NOT NULL,
             movie_id INTEGER NOT NULL,
             rating INTEGER CHECK (rating >= 1 AND rating <= 5),
-            rated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+            updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
             FOREIGN KEY (movie_id) REFERENCES movies(movie_id) ON DELETE CASCADE,
             FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
         );
@@ -133,10 +135,9 @@ class DBManager:
         create_watch_history_table = """
         CREATE TABLE IF NOT EXISTS watch_history (
             watch_id SERIAL PRIMARY KEY,
-            timestamp TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+            updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
             user_id BIGINT NOT NULL,
             movie_id INTEGER NOT NULL,
-            watch_time TIMESTAMP WITHOUT TIME ZONE,
             watched_minutes INTEGER,
             FOREIGN KEY (movie_id) REFERENCES movies(movie_id) ON DELETE CASCADE,
             FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
@@ -186,6 +187,11 @@ class DBManager:
         BEFORE INSERT ON ratings
         FOR EACH ROW
         EXECUTE FUNCTION ensure_user_and_movie_exist();
+
+        CREATE TRIGGER trigger_ensure_user_movie_watch_history
+        BEFORE INSERT ON watch_history
+        FOR EACH ROW
+        EXECUTE FUNCTION ensure_user_and_movie_exist();
         """
 
         try:
@@ -196,6 +202,33 @@ class DBManager:
         except Exception as e:
             self.conn.rollback()
             self.logger.error(f"Error creating function or trigger: {str(e)}")
+    
+    def ensure_movie_exists(self, movie_title_id: str) -> int:
+        """
+        Ensure that a movie with the given movie_title_id exists in the movies table.
+        If it does not exist, insert a new record and return the movie_id.
+        
+        Args:
+            movie_title_id: The movie title ID to check for existence.
+            
+        Returns:
+            int: The movie_id of the existing or newly inserted movie.
+        """
+        # Check if the movie exists
+        query = "SELECT movie_id FROM movies WHERE movie_title_id = %s"
+        self.cursor.execute(query, (movie_title_id,))
+        result = self.cursor.fetchone()
+        
+        if result:
+            return result[0]  # Return existing movie_id
+        
+        # If movie does not exist, insert a new record
+        insert_query = "INSERT INTO movies (movie_title_id) VALUES (%s) RETURNING movie_id"
+        self.cursor.execute(insert_query, (movie_title_id,))
+        new_movie_id = self.cursor.fetchone()[0]
+        self.conn.commit()
+        
+        return new_movie_id  # Return the new movie_id
     
     def insert_record(self, table: str, data: Dict[str, Any]) -> bool:
         """
@@ -210,7 +243,12 @@ class DBManager:
         """
         if not self.conn or self.conn.closed:
             self.connect()
-            
+        
+        # Ensure the movie exists if the table is ratings or watch_history
+        if table in ['ratings', 'watch_history'] and 'movie_title_id' in data:
+            movie_id = self.ensure_movie_exists(data['movie_title_id'])
+            data['movie_id'] = movie_id  # Update the data dictionary with the movie_id
+        
         columns = list(data.keys())
         values = list(data.values())
         
@@ -246,13 +284,47 @@ class DBManager:
         """
         if not self.conn or self.conn.closed:
             self.connect()
-            
+        
+        # Create a copy of the columns list to avoid modifying the original
+        columns_copy = columns.copy()
+        
+        # Ensure the movie exists if the table is ratings or watch_history
+        if table in ['ratings', 'watch_history']:
+            try:
+                # Find the index of movie_title_id in the columns list
+                movie_title_id_index = columns_copy.index('movie_title_id')
+                
+                # Create a new list to store the updated values
+                updated_values = []
+                
+                for value in values:
+                    # Convert tuple to list for modification
+                    value_list = list(value)
+                    # Get the movie_title_id from the values list using the found index
+                    movie_title_id = value_list[movie_title_id_index]
+                    movie_id = self.ensure_movie_exists(movie_title_id)
+                    # Update the movie_id in the values list
+                    value_list[movie_title_id_index] = movie_id
+                    # Convert back to tuple and add to updated values
+                    updated_values.append(tuple(value_list))
+                
+                # Update the values list with the modified values
+                values = updated_values
+                
+                # Update the column name from movie_title_id to movie_id
+                columns_copy[movie_title_id_index] = 'movie_id'
+                
+            except ValueError:
+                # Handle the case where 'movie_title_id' is not in the columns list
+                self.logger.error("'movie_title_id' not found in columns list")
+                return 0
+        
         # Create placeholders for values (%s, %s, ...)
-        placeholders = ', '.join(['%s'] * len(columns))
+        placeholders = ', '.join(['%s'] * len(columns_copy))
         
         query = sql.SQL("INSERT INTO {} ({}) VALUES ({})").format(
             sql.Identifier(table),
-            sql.SQL(', ').join(map(sql.Identifier, columns)),
+            sql.SQL(', ').join(map(sql.Identifier, columns_copy)),
             sql.SQL(placeholders)
         )
         

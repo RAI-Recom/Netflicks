@@ -47,13 +47,13 @@ class DataFormatter:
                     if len(parts) < 3:
                         continue
                     
-                    movie_id = parts[1].replace("+", " ")
+                    movie_title_id = parts[1]
                     minutes = parts[2].split(".")[0]
                     
                     data_entries.append({
-                        "timestamp": row["timestamp"],
+                        "updated_at": row["timestamp"],
                         "user_id": row["request_id"],
-                        "movie_title": movie_id,
+                        "movie_title_id": movie_title_id,
                         "watched_minutes": minutes
                     })
                     
@@ -63,12 +63,12 @@ class DataFormatter:
                     if len(movie_rating) != 2:
                         continue
                     
-                    movie_id = movie_rating[0].replace("+", " ")
+                    movie_title_id = movie_rating[0]
                     
                     rate_entries.append({
-                        "timestamp": row["timestamp"],
+                        "updated_at": row["timestamp"],
                         "user_id": row["request_id"],
-                        "movie_title": movie_id,
+                        "movie_title_id": movie_title_id,
                         "rating": movie_rating[1]
                     })
                     
