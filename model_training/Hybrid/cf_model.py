@@ -8,13 +8,21 @@ from sklearn.neighbors import NearestNeighbors
 ratings_df = pd.read_csv("processed_data/hybrid_model_data.csv")
 explicit_ratings = ratings_df.dropna(subset=["rating_x"])
 
-# Create user-item matrix
-user_item_matrix = explicit_ratings.pivot_table(
-    index='user_id',
-    columns='movie_title',
-    values='rating_x',
-    fill_value=0
-)
+import pandas as pd
+from scipy.sparse import csr_matrix
+
+# Assuming explicit_ratings is already defined
+# Group by user_id and movie_title, and aggregate ratings
+grouped = explicit_ratings.groupby(['user_id', 'movie_title'])['rating_x'].mean().reset_index()
+
+# Create a sparse matrix
+user_ids = grouped['user_id'].astype('category').cat.codes
+movie_titles = grouped['movie_title'].astype('category').cat.codes
+
+# Create a sparse matrix
+user_item_matrix = csr_matrix((grouped['rating_x'], (user_ids, movie_titles)),
+                               shape=(len(grouped['user_id'].unique()), len(grouped['movie_title'].unique())))
+
 
 # Method 1: Matrix Factorization with TruncatedSVD
 svd = TruncatedSVD(n_components=50, random_state=42)

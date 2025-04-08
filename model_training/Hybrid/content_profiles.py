@@ -3,7 +3,7 @@ import numpy as np
 import pickle
 
 # Load dataset
-df = pd.read_csv("processed_data/watch_data_combined.csv")
+df = pd.read_csv("../../data/watch_data_combined.csv", index_col=0)
 df = df.dropna(subset=["genres"])
 
 # Extract unique genres
