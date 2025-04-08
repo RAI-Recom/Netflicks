@@ -123,6 +123,11 @@ CREATE TRIGGER trigger_ensure_user_movie
 BEFORE INSERT ON ratings
 FOR EACH ROW
 EXECUTE FUNCTION ensure_user_and_movie_exist();
+
+CREATE TRIGGER trigger_ensure_user_movie_watch_history
+BEFORE INSERT ON watch_history
+FOR EACH ROW
+EXECUTE FUNCTION ensure_user_and_movie_exist();
 ```
 
 ---

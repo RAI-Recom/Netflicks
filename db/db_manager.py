@@ -17,7 +17,7 @@ class DBManager:
     Handles connection management and data insertion operations.
     """
     
-    def __init__(self, host: str = 'localhost', port: int = 5432, schema: str = 'public'):
+    def __init__(self, host: str = 'localhost', schema: str = 'public'):
         """
         Initialize the database manager with connection parameters.
         
@@ -30,7 +30,7 @@ class DBManager:
         load_dotenv()
         self.connection_params = {
             'host': host,
-            'port': port,
+            'port': os.getenv('DB_PORT'),
             'user': os.getenv('DB_USER'),  # Fetch username from .env
             'password': os.getenv('DB_PASSWORD'),  # Fetch password from .env
             'database': os.getenv('DB_NAME'),  # Corrected to fetch the database name
@@ -377,3 +377,133 @@ class DBManager:
             batch_size=100000  # Adjust based on your system's memory
         )
         print(f"Inserted {rows_inserted} rows into movies table")
+        
+    def load_movies_from_csv(self, csv_filename):
+        """
+        Load movie data from movies_metadata.csv into the movies table.
+        
+        Args:
+            csv_filename: Path to the movies_metadata.csv file
+            
+        Returns:
+            int: Number of rows inserted
+        """
+        import csv
+        from psycopg2 import sql
+        
+        # Define mapping between CSV headers and table columns
+        column_mapping = {
+            'movie_id': 'movie_id',
+            'movie_title_id': 'movie_title_id',
+            'title': 'title',
+            'year': 'year',
+            'imdb_rating': 'rating',
+            'genres': 'genre',  # Note: CSV has 'genres' but table has 'genre'
+            'plot': 'plot'
+
+            # TODO: Below are the new columns, update it.
+            # movie_id,movie_title_id,title,year,rating,genres,plot,runtime,directors,actors,votes,languages,country,release_date,poster
+        }
+        
+        # Columns that need to be set but aren't in the CSV
+        default_values = {
+            'duration': None,  # Will be set to NULL
+            'created_at': None  # Current timestamp
+        }
+        if not self.conn or self.conn.closed:
+            self.connect()
+        # Get all columns from the table
+        cursor = self.conn.cursor()
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = 'movies'
+        """)
+        table_columns = [col[0] for col in cursor.fetchall()]
+        
+        rows_inserted = 0
+        skipped_rows = 0
+        batch_size = 10000  # Adjust based on your system's memory
+        batch = []
+        
+        with open(csv_filename, 'r', encoding='utf-8') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            
+            # Extract all the columns we need to insert into
+            db_columns = []
+            for db_col in table_columns:
+                if db_col in [column_mapping.get(csv_col) for csv_col in column_mapping] or db_col in default_values:
+                    db_columns.append(db_col)
+            
+            # Create placeholders for the SQL query
+            placeholders = ', '.join(['%s' for _ in db_columns])
+            
+            # Construct SQL statement
+            insert_stmt = sql.SQL("INSERT INTO movies ({}) VALUES ({})").format(
+                sql.SQL(', ').join(map(sql.Identifier, db_columns)),
+                sql.SQL(placeholders)
+            )
+            
+            # Process each row in the CSV
+            for row_num, row in enumerate(csv_reader, start=1):
+                try:
+                    # Prepare values for this row
+                    values = []
+                    
+                    # For each database column, get the value from CSV or default
+                    for db_col in db_columns:
+                        # Find which CSV column maps to this DB column
+                        csv_cols = [csv_col for csv_col, mapped_col in column_mapping.items() if mapped_col == db_col]
+                        
+                        if csv_cols and csv_cols[0] in row:
+                            # Get value from CSV
+                            csv_col = csv_cols[0]
+                            value = row[csv_col]
+                            
+                            # Data type conversions
+                            if db_col == 'year' and value:
+                                try:
+                                    value = int(value)
+                                except ValueError:
+                                    value = None
+                            elif db_col == 'rating' and value:
+                                try:
+                                    value = float(value)
+                                except ValueError:
+                                    value = None
+                                    
+                            values.append(value)
+                        else:
+                            # Use default value
+                            values.append(default_values.get(db_col))
+                    
+                    # Add to batch
+                    batch.append(values)
+                    
+                    # Insert in batches
+                    if len(batch) >= batch_size:
+                        cursor.executemany(insert_stmt.as_string(self.conn), batch)
+                        self.conn.commit()
+                        rows_inserted += len(batch)
+                        batch = []
+                        print(f"Inserted batch: {rows_inserted} rows so far, skipped {skipped_rows} rows")
+                        
+                except Exception as e:
+                    skipped_rows += 1
+                    if skipped_rows < 10:  # Limit error messages
+                        print(f"Error at row {row_num}: {e}")
+                    elif skipped_rows == 10:
+                        print("Further error messages suppressed...")
+            
+            # Insert any remaining rows
+            if batch:
+                try:
+                    cursor.executemany(insert_stmt.as_string(self.conn), batch)
+                    self.conn.commit()
+                    rows_inserted += len(batch)
+                except Exception as e:
+                    print(f"Error inserting final batch: {e}")
+                    self.conn.rollback()
+        
+        print(f"Total rows inserted: {rows_inserted}, skipped: {skipped_rows}")
+        return rows_inserted
