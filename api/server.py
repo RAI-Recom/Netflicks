@@ -1,29 +1,11 @@
-from flask import Flask, jsonify, Response
-import pickle
-from loguru import logger
-# from model_training.model_service import load_popularity_model, load_user_recommendations_model
+import sys
+sys.path.append('.')
 
-USER_RECOMMENDATIONS_MODEL = "models/user_recommendations.pkl"
-POPULARITY_MODEL = "models/popular_movies.pkl"
+from flask import Flask, jsonify, Response
+from loguru import logger
+from model_training.model_service import load_popularity_model, load_user_recommendations_model
 
 app = Flask(__name__)
-
-def load_user_recommendations_model():
-    try:
-        with open(USER_RECOMMENDATIONS_MODEL, "rb") as f:
-            return pickle.load(f)
-    except FileNotFoundError:
-        logger.error('Error: User recommendation model not found')
-        return {}
-
-# Load Popularity-Based Model for Cold Start Users
-def load_popularity_model():
-    try:
-        with open(POPULARITY_MODEL, "rb") as f:
-            return pickle.load(f)
-    except FileNotFoundError:
-        logger.error('Error: Popularity model not found')
-        return []
 
 popularity_model = load_popularity_model()
 user_recommendations = load_user_recommendations_model()
