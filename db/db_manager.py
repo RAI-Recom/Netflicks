@@ -10,6 +10,8 @@ from typing import Dict, List, Any, Tuple, Optional
 import logging
 import os
 from dotenv import load_dotenv
+import ast
+import csv
 
 class DBManager:
     """
@@ -96,7 +98,7 @@ class DBManager:
         create_movies_table = """
         CREATE TABLE IF NOT EXISTS movies (
             movie_id SERIAL PRIMARY KEY,
-            imdb_id TEXT,
+            imdb_id INTEGER,
             movie_title_id TEXT NOT NULL,
             title TEXT,
             year INTEGER,
@@ -368,16 +370,16 @@ class DBManager:
             self.logger.error(f"Query execution error: {str(e)}")
             return []
         
-    def insert_from_csv(self, csv_filename: str, table_name: str):
+    # def insert_from_csv(self, csv_filename: str, table_name: str):
         
-        rows_inserted = self.load_csv_to_table(
-            csv_file_path=csv_filename,
-            table_name=table_name,
-            delimiter=',',
-            has_header=True,
-            batch_size=100000  # Adjust based on your system's memory
-        )
-        print(f"Inserted {rows_inserted} rows into movies table")
+    #     rows_inserted = self.load_csv_to_table(
+    #         csv_file_path=csv_filename,
+    #         table_name=table_name,
+    #         delimiter=',',
+    #         has_header=True,
+    #         batch_size=100000  # Adjust based on your system's memory
+    #     )
+    #     print(f"Inserted {rows_inserted} rows into movies table")
         
     def load_movies_from_csv(self, csv_filename):
         """
@@ -389,38 +391,38 @@ class DBManager:
         Returns:
             int: Number of rows inserted
         """
-        import csv
-        from psycopg2 import sql
         
         # Define mapping between CSV headers and table columns
         column_mapping = {
-            'movie_id': 'movie_id',
+            'movie_id': 'imdb_id',
             'movie_title_id': 'movie_title_id',
             'title': 'title',
             'year': 'year',
-            'imdb_rating': 'rating',
-            'genres': 'genre',  # Note: CSV has 'genres' but table has 'genre'
-            'plot': 'plot'
-
-            # TODO: Below are the new columns, update it.
-            # movie_id,movie_title_id,title,year,rating,genres,plot,runtime,directors,actors,votes,languages,country,release_date,poster
+            'rating': 'rating',
+            'genres': 'genres',
+            'plot': 'plot',
+            'runtime': 'runtime',
+            'directors': 'directors',
+            'cast': 'actors',  # Note: CSV has 'cast' but table has 'actors'
+            'votes': 'votes',
+            'languages': 'languages',
+            'country': 'country',
+            'release_date': 'release_date',
+            'poster': 'poster'
         }
         
-        # Columns that need to be set but aren't in the CSV
-        default_values = {
-            'duration': None,  # Will be set to NULL
-            'created_at': None  # Current timestamp
-        }
         if not self.conn or self.conn.closed:
             self.connect()
+        
         # Get all columns from the table
         cursor = self.conn.cursor()
         cursor.execute("""
-            SELECT column_name 
+            SELECT column_name, data_type 
             FROM information_schema.columns 
             WHERE table_name = 'movies'
         """)
-        table_columns = [col[0] for col in cursor.fetchall()]
+        table_columns_with_types = {col[0]: col[1] for col in cursor.fetchall()}
+        table_columns = list(table_columns_with_types.keys())
         
         rows_inserted = 0
         skipped_rows = 0
@@ -433,7 +435,7 @@ class DBManager:
             # Extract all the columns we need to insert into
             db_columns = []
             for db_col in table_columns:
-                if db_col in [column_mapping.get(csv_col) for csv_col in column_mapping] or db_col in default_values:
+                if db_col in [column_mapping.get(csv_col) for csv_col in column_mapping]:
                     db_columns.append(db_col)
             
             # Create placeholders for the SQL query
@@ -461,38 +463,124 @@ class DBManager:
                             csv_col = csv_cols[0]
                             value = row[csv_col]
                             
-                            # Data type conversions
-                            if db_col == 'year' and value:
-                                try:
-                                    value = int(value)
-                                except ValueError:
-                                    value = None
-                            elif db_col == 'rating' and value:
-                                try:
-                                    value = float(value)
-                                except ValueError:
-                                    value = None
+                            # Check for N/A values first
+                            if value is None or value.strip() == '' or value.upper() == 'N/A':
+                                value = None
+                            else:
+                                # Data type conversions
+                                if db_col == 'year':
+                                    try:
+                                        value = int(value)
+                                    except ValueError:
+                                        value = None
+                                elif db_col == 'rating':
+                                    try:
+                                        value = float(value)
+                                    except ValueError:
+                                        value = None
+                                elif db_col == 'genres':
+                                    # Convert genres string to list of strings
+                                    # Split by comma and remove whitespace
+                                    genres_list = [genre.strip() for genre in value.split(',')]
+                                    # For PostgreSQL ARRAY type
+                                    value = genres_list
+                                elif db_col == 'directors':
+                                    # Convert directors string to list of strings
+                                    # Split by comma and remove whitespace
+                                    directors_list = [director.strip() for director in value.split(',')]
+                                    # For PostgreSQL ARRAY type
+                                    value = directors_list
+                                elif db_col == 'actors':
+                                    # Convert cast string to list of strings
+                                    # Split by comma and remove whitespace
+                                    actors_list = [actor.strip() for actor in value.split(',')]
+                                    # For PostgreSQL ARRAY type
+                                    value = actors_list
+                                elif db_col == 'country':
+                                    # Handle country which may be in string list format ['Canada', 'United Kingdom']
+                                    try:
+                                        if value.startswith('[') and value.endswith(']'):
+                                            # Parse the string as a Python literal list
+                                            country_list = ast.literal_eval(value)
+                                            value = country_list
+                                        else:
+                                            # If it's a single country as string
+                                            value = [value.strip()]
+                                    except (ValueError, SyntaxError):
+                                        value = []
+                                elif db_col == 'languages':
+                                    # Handle languages which may also be in list format
+                                    try:
+                                        if value.startswith('[') and value.endswith(']'):
+                                            # Parse the string as a Python literal list
+                                            languages_list = ast.literal_eval(value)
+                                            value = languages_list
+                                        else:
+                                            # If it's a single language as string
+                                            value = [value.strip()]
+                                    except (ValueError, SyntaxError):
+                                        value = []
+                                elif db_col == 'runtime':
+                                    # Convert runtime from list of strings to integer
+                                    try:
+                                        # The input format appears to be a string representation of a list: ['96']
+                                        # First, check if it looks like a list
+                                        if value.startswith('[') and value.endswith(']'):
+                                            # Try to parse with ast.literal_eval for safety
+                                            try:
+                                                runtime_list = ast.literal_eval(value)
+                                                # Take the first item if it's a list
+                                                if isinstance(runtime_list, list) and len(runtime_list) > 0:
+                                                    runtime_str = str(runtime_list[0])
+                                                    value = int(runtime_str) if runtime_str.isdigit() else None
+                                                else:
+                                                    value = None
+                                            except (ValueError, SyntaxError):
+                                                # If parsing fails, try manual extraction
+                                                runtime_str = value.strip('[]').strip("'\"")
+                                                value = int(runtime_str) if runtime_str.isdigit() else None
+                                        else:
+                                            # If it's just a number as string
+                                            value = int(value) if value.isdigit() else None
+                                    except (ValueError, AttributeError):
+                                        value = None
                                     
                             values.append(value)
-                        else:
-                            # Use default value
-                            values.append(default_values.get(db_col))
+                        # else:
+                        #     # Use default value
+                        #     values.append(default_values.get(db_col))
                     
                     # Add to batch
                     batch.append(values)
                     
                     # Insert in batches
                     if len(batch) >= batch_size:
-                        cursor.executemany(insert_stmt.as_string(self.conn), batch)
-                        self.conn.commit()
-                        rows_inserted += len(batch)
-                        batch = []
-                        print(f"Inserted batch: {rows_inserted} rows so far, skipped {skipped_rows} rows")
+                        try:
+                            cursor.executemany(insert_stmt.as_string(self.conn), batch)
+                            self.conn.commit()
+                            rows_inserted += len(batch)
+                            batch = []
+                            print(f"Inserted batch: {rows_inserted} rows so far, skipped {skipped_rows} rows")
+                        except Exception as e:
+                            print(f"Error inserting batch: {e}")
+                            self.conn.rollback()
+                            # Process one by one to skip only problematic rows
+                            for i, single_row in enumerate(batch):
+                                try:
+                                    cursor.execute(insert_stmt.as_string(self.conn), single_row)
+                                    self.conn.commit()
+                                    rows_inserted += 1
+                                except Exception as e2:
+                                    skipped_rows += 1
+                                    if skipped_rows < 10:
+                                        print(f"Error at row ~{row_num - len(batch) + i}: {e2}")
+                            batch = []
                         
                 except Exception as e:
                     skipped_rows += 1
                     if skipped_rows < 10:  # Limit error messages
-                        print(f"Error at row {row_num}: {e}")
+                        print(f"Error processing row {row_num}: {e}")
+                        print(f"Problematic row: {row}")
                     elif skipped_rows == 10:
                         print("Further error messages suppressed...")
             
@@ -505,6 +593,16 @@ class DBManager:
                 except Exception as e:
                     print(f"Error inserting final batch: {e}")
                     self.conn.rollback()
+                    # Process one by one to skip only problematic rows
+                    for i, single_row in enumerate(batch):
+                        try:
+                            cursor.execute(insert_stmt.as_string(self.conn), single_row)
+                            self.conn.commit()
+                            rows_inserted += 1
+                        except Exception as e2:
+                            skipped_rows += 1
+                            if skipped_rows < 10:
+                                print(f"Error at row ~{row_num - len(batch) + i + 1}: {e2}")
         
         print(f"Total rows inserted: {rows_inserted}, skipped: {skipped_rows}")
         return rows_inserted
