@@ -103,14 +103,20 @@ class DBManager:
             genres TEXT[],  -- To store an array of genres
             plot TEXT,
             duration INTEGER,  -- Renamed from runtime
-            directors TEXT,  -- To store the directors
-            actors TEXT,  -- To store the actors
+            directors TEXT[],  -- To store the directors
+            actors TEXT[],  -- To store the actors
             votes INTEGER,  -- To store the number of votes
             languages TEXT[],  -- To store an array of languages
             country TEXT[],  -- To store an array of countries
             release_date DATE,  -- To store the release date
             poster TEXT,  -- To store the poster URL
             UNIQUE (title, movie_title_id)
+        );
+        """
+
+        create_users_table = """
+        CREATE TABLE IF NOT EXISTS users (
+            user_id BIGINT NOT NULL PRIMARY KEY
         );
         """
 
@@ -123,12 +129,6 @@ class DBManager:
             updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
             FOREIGN KEY (movie_id) REFERENCES movies(movie_id) ON DELETE CASCADE,
             FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-        );
-        """
-
-        create_users_table = """
-        CREATE TABLE IF NOT EXISTS users (
-            user_id BIGINT NOT NULL PRIMARY KEY
         );
         """
 
@@ -146,8 +146,8 @@ class DBManager:
 
         try:
             self.cursor.execute(create_movies_table)
-            self.cursor.execute(create_ratings_table)
             self.cursor.execute(create_users_table)
+            self.cursor.execute(create_ratings_table)
             self.cursor.execute(create_watch_history_table)
             self.conn.commit()
             print("Tables created successfully.")
@@ -183,12 +183,12 @@ class DBManager:
         """
 
         create_trigger = """
-        CREATE TRIGGER trigger_ensure_user_movie
+        CREATE OR REPLACE TRIGGER trigger_ensure_user_movie
         BEFORE INSERT ON ratings
         FOR EACH ROW
         EXECUTE FUNCTION ensure_user_and_movie_exist();
 
-        CREATE TRIGGER trigger_ensure_user_movie_watch_history
+        CREATE OR REPLACE TRIGGER trigger_ensure_user_movie_watch_history
         BEFORE INSERT ON watch_history
         FOR EACH ROW
         EXECUTE FUNCTION ensure_user_and_movie_exist();

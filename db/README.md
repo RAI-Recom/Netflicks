@@ -16,8 +16,8 @@
 | `genres`            | `text[]`                   |               |              |                   | `extended`  | Array of genres associated with the movie. |
 | `plot`              | `text`                     |               |              |                   | `extended`  | A brief description of the plot.    |
 | `duration`          | `integer`                  |               |              |                   | `plain`     | Duration of the movie in minutes.   |
-| `directors`         | `text`                     |               |              |                   | `extended`  | Directors of the movie.              |
-| `actors`            | `text`                     |               |              |                   | `extended`  | Cast of the movie.                  |
+| `directors`         | `text[]`                     |               |              |                   | `extended`  | Directors of the movie.              |
+| `actors`            | `text[]`                     |               |              |                   | `extended`  | Cast of the movie.                  |
 | `votes`             | `integer`                  |               |              |                   | `plain`     | Number of votes for the movie.      |
 | `languages`         | `text[]`                   |               |              |                   | `extended`  | Array of languages associated with the movie. |
 | `country`           | `text[]`                   |               |              |                   | `extended`  | Array of countries associated with the movie. |
