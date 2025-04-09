@@ -12,6 +12,7 @@ import os
 from dotenv import load_dotenv
 import ast
 import csv
+from datetime import datetime
 
 class DBManager:
     """
@@ -251,7 +252,8 @@ class DBManager:
         if table in ['ratings', 'watch_history'] and 'movie_title_id' in data:
             movie_id = self.ensure_movie_exists(data['movie_title_id'])
             data['movie_id'] = movie_id  # Update the data dictionary with the movie_id
-        
+            del data['movie_title_id']  # Remove movie_title_id from the data dictionary
+
         columns = list(data.keys())
         values = list(data.values())
         
@@ -606,3 +608,182 @@ class DBManager:
         
         print(f"Total rows inserted: {rows_inserted}, skipped: {skipped_rows}")
         return rows_inserted
+    
+    def load_ratings_from_csv(self, csv_filename):
+        """
+        Load user rating data from a CSV file into the ratings table.
+        
+        Args:
+            csv_filename: Path to the ratings CSV file
+                
+        Returns:
+            int: Number of rows inserted
+        """
+        
+        if not self.conn or self.conn.closed:
+            self.connect()
+        
+        rows_inserted = 0
+        skipped_rows = 0
+        batch_size = 1000  # A reasonable batch size
+        
+        with open(csv_filename, 'r', encoding='utf-8') as csv_file:
+            # Using comma as delimiter based on your example
+            csv_reader = csv.DictReader(csv_file, delimiter=',')  
+            
+            # Process each row in the CSV
+            for row_num, row in enumerate(csv_reader, start=1):
+                try:
+                    # Convert the CSV row to a data dictionary for insertion
+                    data = {}
+                    
+                    # Process user_id
+                    if 'user_id' in row and row['user_id']:
+                        try:
+                            data['user_id'] = int(row['user_id'])
+                        except ValueError:
+                            print(f"Invalid user_id in row {row_num}: {row['user_id']}")
+                            skipped_rows += 1
+                            continue
+                    else:
+                        print(f"Missing user_id in row {row_num}")
+                        skipped_rows += 1
+                        continue
+                    
+                    # Process movie_title_id (which will be resolved to movie_id by ensure_movie_exists)
+                    if 'movie_title' in row and row['movie_title']:
+                        data['movie_title_id'] = row['movie_title'].replace(" ", "+")
+                    else:
+                        print(f"Missing movie_title in row {row_num}")
+                        skipped_rows += 1
+                        continue
+                    
+                    # Process rating
+                    if 'rating' in row and row['rating']:
+                        try:
+                            data['rating'] = int(row['rating'])
+                        except ValueError:
+                            print(f"Invalid rating in row {row_num}: {row['rating']}")
+                            skipped_rows += 1
+                            continue
+                    else:
+                        print(f"Missing rating in row {row_num}")
+                        skipped_rows += 1
+                        continue
+                    
+                    # Process timestamp
+                    if 'timestamp' in row and row['timestamp']:
+                        try:
+                            data['updated_at'] = datetime.fromisoformat(row['timestamp'])
+                        except ValueError:
+                            print(f"Invalid timestamp in row {row_num}: {row['timestamp']}")
+                            data['updated_at'] = datetime.now()  # Use current time as fallback
+                    else:
+                        data['updated_at'] = datetime.now()  # Use current time if not provided
+                    
+                    # Use the existing insert_record method which handles movie_title_id conversion
+                    if self.insert_record('ratings', data):
+                        rows_inserted += 1
+                        if rows_inserted % batch_size == 0:
+                            print(f"Inserted {rows_inserted} rows so far, skipped {skipped_rows} rows")
+                    else:
+                        skipped_rows += 1
+                        print(f"Failed to insert row {row_num}: {row}")
+                    
+                except Exception as e:
+                    skipped_rows += 1
+                    print(f"Error processing row {row_num}: {e}")
+                    print(f"Problematic row: {row}")
+        
+        print(f"Total rows inserted: {rows_inserted}, skipped: {skipped_rows}")
+        return rows_inserted
+    
+
+    def load_watch_history_from_csv(self, csv_filename):
+        """
+        Load user watch history data from a CSV file into the watch_history table.
+        
+        Args:
+            csv_filename: Path to the ratings CSV file
+                
+        Returns:
+            int: Number of rows inserted
+        """
+        
+        if not self.conn or self.conn.closed:
+            self.connect()
+        
+        rows_inserted = 0
+        skipped_rows = 0
+        batch_size = 1000  # A reasonable batch size
+        
+        with open(csv_filename, 'r', encoding='utf-8') as csv_file:
+            # Using comma as delimiter based on your example
+            csv_reader = csv.DictReader(csv_file, delimiter=',')  
+            
+            # Process each row in the CSV
+            for row_num, row in enumerate(csv_reader, start=1):
+                try:
+                    # Convert the CSV row to a data dictionary for insertion
+                    data = {}
+                    
+                    # Process user_id
+                    if 'user_id' in row and row['user_id']:
+                        try:
+                            data['user_id'] = int(row['user_id'])
+                        except ValueError:
+                            print(f"Invalid user_id in row {row_num}: {row['user_id']}")
+                            skipped_rows += 1
+                            continue
+                    else:
+                        print(f"Missing user_id in row {row_num}")
+                        skipped_rows += 1
+                        continue
+                    
+                    # Process movie_title_id (which will be resolved to movie_id by ensure_movie_exists)
+                    if 'movie_title' in row and row['movie_title']:
+                        data['movie_title_id'] = row['movie_title'].replace(" ", "+")
+                    else:
+                        print(f"Missing movie_title in row {row_num}")
+                        skipped_rows += 1
+                        continue
+                    
+                    # Process rating
+                    if 'watched_minutes' in row and row['watched_minutes']:
+                        try:
+                            data['watched_minutes'] = int(row['watched_minutes'])
+                        except ValueError:
+                            print(f"Invalid rating in row {row_num}: {row['rating']}")
+                            skipped_rows += 1
+                            continue
+                    else:
+                        print(f"Missing watched minutes in row {row_num}")
+                        skipped_rows += 1
+                        continue
+                    
+                    # Process timestamp
+                    if 'timestamp' in row and row['timestamp']:
+                        try:
+                            data['updated_at'] = datetime.fromisoformat(row['timestamp'])
+                        except ValueError:
+                            print(f"Invalid timestamp in row {row_num}: {row['timestamp']}")
+                            data['updated_at'] = datetime.now()  # Use current time as fallback
+                    else:
+                        data['updated_at'] = datetime.now()  # Use current time if not provided
+                    
+                    # Use the existing insert_record method which handles movie_title_id conversion
+                    if self.insert_record('watch_history', data):
+                        rows_inserted += 1
+                        if rows_inserted % batch_size == 0:
+                            print(f"Inserted {rows_inserted} rows so far, skipped {skipped_rows} rows")
+                    else:
+                        skipped_rows += 1
+                        print(f"Failed to insert row {row_num}: {row}")
+                    
+                except Exception as e:
+                    skipped_rows += 1
+                    print(f"Error processing row {row_num}: {e}")
+                    print(f"Problematic row: {row}")
+        
+        print(f"Total rows inserted: {rows_inserted}, skipped: {skipped_rows}")
+        return rows_inserted 
