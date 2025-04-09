@@ -96,6 +96,7 @@ class DBManager:
         create_movies_table = """
         CREATE TABLE IF NOT EXISTS movies (
             movie_id SERIAL PRIMARY KEY,
+            imdb_id INTEGER,
             movie_title_id TEXT NOT NULL,
             title TEXT,
             year INTEGER,

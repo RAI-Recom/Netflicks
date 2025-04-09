@@ -9,6 +9,7 @@
 | **Column Name**    | **Data Type**               | **Collation** | **Nullable** | **Default Value** | **Storage** | **Description**                     |
 |---------------------|-----------------------------|---------------|--------------|-------------------|-------------|-------------------------------------|
 | `movie_id`          | `integer`                  |               | `NOT NULL`   |                   | `plain`     | Unique identifier for the movie.    |
+| `imdb_id`           | `integer`                  |               |              |                   | `plain`     | IMDB ID for the movie.    |
 | `movie_title_id`    | `text`                     |               | `NOT NULL`   |                   | `extended`  | External or alternative title ID.   |
 | `title`             | `text`                     |               |              |                   | `extended`  | The title of the movie.             |
 | `year`              | `integer`                  |               |              |                   | `plain`     | The release year of the movie.      |

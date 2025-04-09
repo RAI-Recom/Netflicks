@@ -126,15 +126,8 @@ class KafkaStreamReader:
             Dict containing count of inserted data and rate entries
         """
         try:
-            # Create DataFrame from messages
-            df = pd.DataFrame({
-                'request': messages,
-                'timestamp': pd.Timestamp.now(),  # You might want to extract actual timestamps
-                'request_id': range(len(messages))  # You might want to extract actual request IDs
-            })
-            
             # Process data using DataFormatter
-            data_df, rate_df = self.data_formatter.process_chunk(df)
+            data_df, rate_df = self.data_formatter.process_chunk(messages)
             
             inserted_counts = {'data': 0, 'rate': 0}
             

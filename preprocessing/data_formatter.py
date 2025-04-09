@@ -7,6 +7,7 @@ FUNCTION THAT PRE PROCESSES THE DATA FROM THE KAFKA STREAM INTO DATA AND RATE EN
 import pandas as pd
 import logging
 from typing import Tuple, Dict, List, Any
+from datetime import datetime
 
 class DataFormatter:
     """
@@ -31,46 +32,35 @@ class DataFormatter:
         
         return logger
     
-    def process_chunk(self, chunk: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def process_chunk(self, messages: List[str]) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
         Process a chunk of data and return transformed DataFrames for Data and Rate entries.
         """
         data_entries = []
         rate_entries = []
         
-        for _, row in chunk.iterrows():
+        for message in messages:
             try:
-                req = row["request"]
-                
-                if req.startswith("GET /data/"):
-                    parts = req.split("/data/")[1].split("/")
-                    if len(parts) < 3:
-                        continue
+                data = message.split(",")
+
+                if data[2].startswith("GET /data/"):
+                    value = {
+                            "updated_at": datetime.fromisoformat(data[0]),
+                            "user_id": data[1],
+                            "movie_title_id": data[2].split("/data/")[1].split("/")[1],
+                            "watched_minutes": int(data[2].split("/data/")[1].split("/")[2].split(".")[0])
+                        } 
                     
-                    movie_title_id = parts[1]
-                    minutes = parts[2].split(".")[0]
+                    data_entries.append(value)
                     
-                    data_entries.append({
-                        "updated_at": row["timestamp"],
-                        "user_id": row["request_id"],
-                        "movie_title_id": movie_title_id,
-                        "watched_minutes": minutes
-                    })
-                    
-                elif req.startswith("GET /rate/"):
-                    rate_part = req.split("/rate/")[1]
-                    movie_rating = rate_part.split("=")
-                    if len(movie_rating) != 2:
-                        continue
-                    
-                    movie_title_id = movie_rating[0]
-                    
-                    rate_entries.append({
-                        "updated_at": row["timestamp"],
-                        "user_id": row["request_id"],
-                        "movie_title_id": movie_title_id,
-                        "rating": movie_rating[1]
-                    })
+                elif data[2].startswith("GET /rate/"):
+                    value = {
+                            "updated_at": datetime.fromisoformat(data[0]),
+                            "user_id": data[1],
+                            "movie_title_id": data[2].split("/rate/")[1].split("=")[0],
+                            "rating": int(data[2].split("/rate/")[1].split("=")[1])
+                        } 
+                    rate_entries.append(value)
                     
             except Exception as e:
                 self.logger.error(f"Error processing row: {e}")
