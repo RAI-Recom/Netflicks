@@ -99,8 +99,8 @@ class DBManager:
         create_movies_table = """
         CREATE TABLE IF NOT EXISTS movies (
             movie_id SERIAL PRIMARY KEY,
-            imdb_id INTEGER,
-            movie_title_id TEXT NOT NULL,
+            imdb_id TEXT,
+            movie_title_id TEXT NOT NULL UNIQUE,
             title TEXT,
             year INTEGER,
             rating NUMERIC,
@@ -444,7 +444,7 @@ class DBManager:
             placeholders = ', '.join(['%s' for _ in db_columns])
             
             # Construct SQL statement
-            insert_stmt = sql.SQL("INSERT INTO movies ({}) VALUES ({})").format(
+            insert_stmt = sql.SQL("INSERT INTO movies ({}) VALUES ({}) ON CONFLICT (movie_title_id) DO NOTHING").format(
                 sql.SQL(', ').join(map(sql.Identifier, db_columns)),
                 sql.SQL(placeholders)
             )
