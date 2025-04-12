@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
-            steps {
-                // scm
-            }
-        }
+        // stage('Checkout') {
+        //     steps {
+        //         scm
+        //     }
+        // }
         // stage('Build Docker Image') {
         //     steps {
         //         script {
