@@ -2,3 +2,4 @@ sqlalchemy
 pandas
 scikit-learn
 psycopg2
+python-dotenv
