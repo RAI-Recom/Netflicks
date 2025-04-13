@@ -2,10 +2,20 @@
     agent any
 
     stages {
+        stage('Clean Docker Images') {
+            steps {
+                script {
+                    // Remove old Docker images to ensure fresh builds
+                    sh 'docker rmi -f test1 || true'
+                    sh 'docker rmi -f netflicks-infer2 || true'
+                }
+            }
+        }
+
         stage('Train Model') {
             steps {
                 script {
-                    //sh 'docker build -f Dockerfile.test1 -t test1 .'
+                    sh 'docker build -f Dockerfile.test1 -t test1 .'
                     // sh 'docker run --network=host test1'
                     sh 'docker run --network=host --name train_container test1'
 
