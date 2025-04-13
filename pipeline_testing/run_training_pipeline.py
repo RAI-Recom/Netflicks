@@ -20,5 +20,5 @@ movie_vectors = profile_builder.build_movie_genre_vectors(watch_df, genre_cols)
 # # Train and save models
 cf_model = train_cf.train_cf_model(cf_df)
 cb_model = train_cb.train_cb_model(cb_df)
-# save_model.save_model(cf_model, "models/cf_model.pkl")
-# save_model.save_model(cb_model, "models/cb_model.pkl")
+save_model.save_model(cf_model, "models/cf_model.pkl")
+save_model.save_model(cb_model, "models/cb_model.pkl")
