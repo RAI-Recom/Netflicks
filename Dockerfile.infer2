@@ -1,3 +1,14 @@
+# FROM python:3.10-slim
+
+# # Install curl to make HTTP requests
+# RUN apt-get update && apt-get install -y curl && apt-get clean
+
+# # Set working directory
+# WORKDIR /app
+# CMD ["python", "api/server.py"]
+# # Command to hit the API and print the response
+# CMD ["sh", "-c", "echo 'Calling FastAPI endpoint...'; curl http://host.docker.internal:8082/recommend/2"]
+
 FROM python:3.10-slim
 
 # Install curl to make HTTP requests
@@ -5,6 +16,6 @@ RUN apt-get update && apt-get install -y curl && apt-get clean
 
 # Set working directory
 WORKDIR /app
-CMD ["python", "api/server.py"]
-# Command to hit the API and print the response
-CMD ["sh", "-c", "echo 'Calling FastAPI endpoint...'; curl http://host.docker.internal:8082/recommend/2"]
+
+# Call FastAPI endpoint hosted on the host machine
+CMD ["sh", "-c", "echo 'Calling FastAPI endpoint...'; curl http://localhost:8082/recommend/2"]
