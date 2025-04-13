@@ -27,7 +27,6 @@ def get_sqlalchemy_engine():
 
 def load_ratings_chunk(limit=10000, offset=0):
     engine = get_sqlalchemy_engine()
-    print(engine)
     query = f"""
         SELECT r.user_id, r.movie_id, r.rating, m.title, m.genres, m.plot
         FROM ratings r
