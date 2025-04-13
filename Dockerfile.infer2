@@ -15,5 +15,18 @@ RUN apt-get update && apt-get install -y curl && apt-get clean
 
 WORKDIR /app
 
-CMD ["sh", "-c", "echo 'Calling FastAPI endpoint...'; curl http://localhost:8082/recommend/2"]
-
+# CMD ["sh", "-c", "echo 'Calling FastAPI endpoint...'; curl http://localhost:8082/recommend/2"]
+CMD ["sh", "-c", "\
+    echo 'Calling FastAPI endpoint...'; \
+    RESPONSE=$(curl -s http://localhost:8082/recommend/2); \
+    echo Response: $RESPONSE; \
+    echo $RESPONSE | jq . > /dev/null 2>&1; \
+    if [ $? -ne 0 ]; then \
+        echo '❌ Test failed: Invalid JSON response from API.'; exit 1; \
+    fi; \
+    COUNT=$(echo $RESPONSE | jq length); \
+    if [ $COUNT -eq 20 ]; then \
+        echo '✅ Test passed: API returned 20 movie recommendations.'; \
+    else \
+        echo \"❌ Test failed: Expected 20 recommendations, got $COUNT.\"; exit 1; \
+    fi"]
