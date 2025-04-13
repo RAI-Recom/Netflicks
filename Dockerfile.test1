@@ -2,7 +2,7 @@ FROM python:3.10.12
 WORKDIR /app
 COPY /requirements.train.txt .
 RUN pip install --no-cache-dir -r requirements.train.txt
-RUN jenkins-plugin-cli --plugins envinject
+# RUN jenkins-plugin-cli --plugins envinject
 
 COPY pipeline_testing/ .
 CMD ["python", "run_training_pipeline.py"]
