@@ -16,6 +16,10 @@
             steps {
                 script {
                     sh 'docker build -f Dockerfile.test1 -t test1 .'
+                    
+                    // Clean up any old container with the same name 'train_container'
+                    sh 'docker rm -f train_container || true'
+
                     // sh 'docker run --network=host test1'
                     sh 'docker run --network=host --name train_container test1'
 
