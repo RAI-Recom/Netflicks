@@ -10,8 +10,7 @@
                 }
             }
         }
-    }
-    stage('Infer Model') {
+        stage('Infer Model') {
             steps {
                 script {
                     sh 'docker build -f Dockerfile.infer2 -t netflicks-infer2 .'
@@ -19,4 +18,5 @@
                 }
             }
         }
+    }
 }
