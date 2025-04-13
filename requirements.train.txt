@@ -1,0 +1,4 @@
+sqlalchemy
+pandas
+scikit-learn
+psycopg2

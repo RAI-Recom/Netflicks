@@ -1,3 +1,7 @@
-FROM alpine:latest
+FROM python:3.10.12
+WORKDIR /app
+COPY /requirements.train.txt .
+RUN pip install --no-cache-dir -r requirements.train.txt
 
-CMD ["echo", "This is the first Dockerfile"]
+COPY pipeline_testing/ .
+CMD ["python", "run_training_pipeline.py"]

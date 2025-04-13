@@ -14,7 +14,7 @@ def build_movie_genre_vectors(watch_df, genre_cols):
     movie_vectors = movie_df.set_index("movie_id")[genre_cols]
     return movie_vectors
 
-def save_profiles(user_profiles, movie_vectors, user_path="models/user_profiles.pkl", movie_path="models/movie_vectors.pkl"):
+def save_profiles(user_profiles, movie_vectors, user_path="pipeline_testing/models/user_profiles.pkl", movie_path="pipeline_testing/models/movie_vectors.pkl"):
     """
     Saves user and movie profiles to disk.
     """
