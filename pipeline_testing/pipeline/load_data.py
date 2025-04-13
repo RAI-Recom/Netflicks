@@ -9,11 +9,11 @@ from dotenv import load_dotenv
 def load_config():
     load_dotenv()
     return {
-                'host': os.getenv('HOST'),
-                'port': os.getenv('DB_PORT'),
-                'user': os.getenv('DB_USER'),  # Fetch username from .env
-                'password': os.getenv('DB_PASSWORD'),  # Fetch password from .env
-                'dbname': os.getenv('DB_NAME'),  # Corrected to fetch the database name
+                'host': os.getenv('$HOST'),
+                'port': os.getenv('$DB_PORT'),
+                'user': os.getenv('$DB_USER'),  # Fetch username from .env
+                'password': os.getenv('$DB_PASSWORD'),  # Fetch password from .env
+                'dbname': os.getenv('$DB_NAME'),  # Corrected to fetch the database name
             }
 
 # def load_db_config(config_path="pipeline_testing/config/db_config.json"):
