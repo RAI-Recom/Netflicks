@@ -11,11 +11,9 @@
 
 FROM python:3.10-slim
 
-# Install curl to make HTTP requests
 RUN apt-get update && apt-get install -y curl && apt-get clean
 
-# Set working directory
 WORKDIR /app
 
-# Call FastAPI endpoint hosted on the host machine
 CMD ["sh", "-c", "echo 'Calling FastAPI endpoint...'; curl http://localhost:8082/recommend/2"]
+
