@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 #                 'dbname': os.getenv('DB_NAME'),  # Corrected to fetch the database name
 #             }
 
-def load_db_config(config_path="pipeline_testing/config/db_config.json"):
+def load_db_config(config_path="config/db_config.json"):
     with open(config_path) as f:
         return json.load(f)
 

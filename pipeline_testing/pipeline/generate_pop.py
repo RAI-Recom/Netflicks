@@ -20,7 +20,7 @@ def compute_popularity_model(movie_df, top_n=20):
     top_movies = movie_df.sort_values("popularity_score", ascending=False)
     return top_movies["movie_id"].head(top_n).tolist()
 
-def save_popularity_model(popular_ids, path="pipeline_testing/models/popular_movies.pkl"):
+def save_popularity_model(popular_ids, path="models/popular_movies.pkl"):
     with open(path, "wb") as f:
         pickle.dump(popular_ids, f)
 
