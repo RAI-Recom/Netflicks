@@ -1,11 +1,7 @@
-# FROM python:3.10.12
-# WORKDIR /app
-# COPY /requirements.train.txt .
-# RUN pip install --no-cache-dir -r requirements.train.txt
+FROM python:3.10.12
+WORKDIR /app
+COPY /requirements.train.txt .
+RUN pip install --no-cache-dir -r requirements.train.txt
 
-# COPY pipeline_testing/ .
-# CMD ["python", "run_training_pipeline.py"]
-
-FROM alpine:latest
-
-CMD ["echo", "This is the second Dockerfile"]
+COPY pipeline_testing/ .
+CMD ["python", "run_training_pipeline.py"]
