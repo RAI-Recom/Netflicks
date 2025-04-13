@@ -22,7 +22,7 @@ def load_config():
 
 def get_sqlalchemy_engine():
     db = load_config()
-    db_uri = f"postgresql://{db['user']}:{db['password']}@{db['host']}:{db['port']}/{db['dbname']}"
+    db_uri = f"postgresql://{db['user']}:{db['password']}@{db['host']}:5432/{db['dbname']}"
     return create_engine(db_uri)
 
 def load_ratings_chunk(limit=10000, offset=0):
