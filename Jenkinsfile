@@ -10,6 +10,29 @@
                 }
             }
         }
+
+        stage('Test Model Output') {
+            steps {
+                script {
+                    // Copy the pickle file from the container to host (Jenkins workspace)
+                    sh 'docker cp train_container:/app/models/popular_movies.pkl ./popular_movies.pkl'
+
+                    // Check if the file exists and is non-empty
+                    sh '''
+                        if [ ! -s ./popular_movies.pkl ]; then
+                            echo "Test failed: Pickle file is missing or empty."
+                            exit 1
+                        else
+                            echo "Test passed: Pickle file generated successfully."
+                        fi
+                    '''
+
+                    // Cleanup
+                    sh 'docker rm train_container'
+                }
+            }
+        }
+
         stage('Infer Model') {
             steps {
                 script {
