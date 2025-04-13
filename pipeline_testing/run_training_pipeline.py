@@ -7,7 +7,7 @@ watch_df = load_data.load_watch_chunk(limit=5000, offset=0)
 movie_df = load_data.load_movies()
 
 # Train popularity model
-generate_pop.train_and_save_popularity(movie_df, top_n=20)
+# generate_pop.train_and_save_popularity(movie_df, top_n=20)
 
 # Preprocess data for CF and CB models
 cf_df = preprocess.preprocess_cf(ratings_df)
