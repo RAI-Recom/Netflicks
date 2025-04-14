@@ -63,7 +63,7 @@
                         -e HOST=${env.HOST} \
                         -e DB_PORT=${env.DB_PORT} \
                         -e DB_NAME=${env.DB_NAME} \
-                        my-image-api
+                        test
                     """
 
                 }
