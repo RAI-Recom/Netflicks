@@ -39,6 +39,8 @@
                     // sh 'docker run --network=host test1'
                     // sh 'docker run --network=host --name train_container test'
 
+                    sh 'docker volume create model_volume'
+
                     sh """
                         docker run --network=host \
                         --name train_container \
@@ -49,8 +51,8 @@
                         -e DB_NAME=${env.DB_NAME} \
                         test
                     """
-                    sh 'docker volume create model_volume'
-                    sh 'docker run --rm -v model_volume:/app/models test'
+                    
+                    // sh 'docker run --rm -v model_volume:/app/models test'
                     sh 'docker run -p 8082:8082 -v model_volume:/app/models test'
 
                 }
