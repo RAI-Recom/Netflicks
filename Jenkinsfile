@@ -31,7 +31,7 @@
         stage('Train Model') {
             steps {
                 script {
-                    sh 'docker build -f Dockerfile.test1 -t test1 .'
+                    sh 'docker build -f Dockerfile.test -t test .'
                     
                     // Clean up any old container with the same name 'train_container'
                     sh 'docker rm -f train_container || true'
@@ -79,8 +79,8 @@
         stage('Infer Model') {
             steps {
                 script {
-                    sh 'docker build -f Dockerfile.infer2 -t netflicks-infer2 .'
-                    sh 'docker run --network=host netflicks-infer2'
+                    sh 'docker build -f Dockerfile.run-t netflicks-run .'
+                    sh 'docker run --network=host netflicks-run'
                 }
             }
         }
