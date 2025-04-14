@@ -22,7 +22,7 @@
             steps {
                 script {
                     // Remove old Docker images to ensure fresh builds
-                    sh 'docker rmi -f test1 || true'
+                    sh 'docker rmi -f test || true'
                     sh 'docker rmi -f netflicks-infer2 || true'
                 }
             }
@@ -47,7 +47,7 @@
                         -e HOST=${env.HOST} \
                         -e DB_PORT=${env.DB_PORT} \
                         -e DB_NAME=${env.DB_NAME} \
-                        test1
+                        test
                     """
 
                 }

@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y curl jq && apt-get clean
 
 WORKDIR /app
 
-COPY apis/server.py .
+COPY api/server.py .
 
 ENV FLASK_APP=server.py
 EXPOSE 8082
