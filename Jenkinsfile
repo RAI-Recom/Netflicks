@@ -1,6 +1,14 @@
     pipeline {
     agent any
 
+    environment {
+    DB_USER = credentials('DB_USER')  // ID used in Jenkins credentials
+    DB_PASSWORD = credentials('DB_PASSWORD')
+    HOST = credentials('HOST')
+    DB_PORT = credentials('DB_PORT')
+    DB_NAME = credentials('DB_NAME')
+    }
+
     stages {
         stage('Clean Docker Images') {
             steps {
