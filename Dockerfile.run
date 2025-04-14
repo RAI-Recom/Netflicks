@@ -23,7 +23,7 @@ VOLUME ["/app/models"]
 
 # COPY models/ ./models/
 COPY api/server.py .
-COPY pipeline_testing/ .
+COPY pipeline_testing/ pipeline_testing/
 
 ENV FLASK_APP=server.py
 EXPOSE 8082

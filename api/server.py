@@ -3,16 +3,15 @@ sys.path.append('.')
 
 from flask import Flask, jsonify, Response
 from loguru import logger
-import pipeline_testing
-
+from pipeline_testing.hybrid_recommend import hybrid_recommend
 app = Flask(__name__)
 
 
 @app.route('/recommend/<int:user_id>', methods=['GET'])
 def recommend_movies(user_id):
     try: 
-        # return jsonify(hybrid_recommend(user_id, 20))
-        return ()
+        return jsonify(hybrid_recommend(user_id, 20))
+
     except Exception as e:
         logger.error(e)
         return Response('{"error": "Internal Server Error"}', status=500, content_type="application/json")   
