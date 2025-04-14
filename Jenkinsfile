@@ -81,8 +81,6 @@
                 }
             }
         }
-
-        stages {
         stage('Check Docker Access') {
             steps {
                 sh 'id'                // check current user
@@ -91,7 +89,6 @@
                 sh 'docker ps'        // test docker command
             }
         }
-    }
         stage('Infer Model') {
             steps {
                 script {
