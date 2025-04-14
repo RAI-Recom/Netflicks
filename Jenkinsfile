@@ -1,14 +1,6 @@
     pipeline {
     agent any
 
-    // environment {
-    // DB_USER = credentials('DB_USER')  // ID used in Jenkins credentials
-    // DB_PASSWORD = credentials('DB_PASSWORD')
-    // HOST = credentials('HOST')
-    // DB_PORT = credentials('DB_PORT')
-    // DB_NAME = credentials('DB_NAME')
-    // }
-
     environment {
     DB_USER     = "${env.DB_USER}"
     DB_PASSWORD = "${env.DB_PASSWORD}"
@@ -90,6 +82,16 @@
             }
         }
 
+        stages {
+        stage('Check Docker Access') {
+            steps {
+                sh 'id'                // check current user
+                sh 'groups'           // check user groups
+                sh 'which docker'     // see if docker is in PATH
+                sh 'docker ps'        // test docker command
+            }
+        }
+    }
         stage('Infer Model') {
             steps {
                 script {
