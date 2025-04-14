@@ -53,7 +53,18 @@
                     """
                     
                     // sh 'docker run --rm -v model_volume:/app/models test'
-                    sh 'docker run -p 8083:8082 -v model_volume:/app/models test'
+                    sh """
+                        docker run --network=host \
+                        --name api_container \
+                        -p 8083:8082 \
+                        -v model_volume:/app/models \
+                        -e DB_USER=${env.DB_USER} \
+                        -e DB_PASSWORD=${env.DB_PASSWORD} \
+                        -e HOST=${env.HOST} \
+                        -e DB_PORT=${env.DB_PORT} \
+                        -e DB_NAME=${env.DB_NAME} \
+                        my-image-api
+                    """
 
                 }
             }
