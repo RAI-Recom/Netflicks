@@ -53,7 +53,7 @@
                     """
                     
                     // sh 'docker run --rm -v model_volume:/app/models test'
-                    sh 'docker run -p 8082:8082 -v model_volume:/app/models test'
+                    sh 'docker run -p 8083:8082 -v model_volume:/app/models test'
 
                 }
             }
