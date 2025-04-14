@@ -1,12 +1,20 @@
     pipeline {
     agent any
 
+    // environment {
+    // DB_USER = credentials('DB_USER')  // ID used in Jenkins credentials
+    // DB_PASSWORD = credentials('DB_PASSWORD')
+    // HOST = credentials('HOST')
+    // DB_PORT = credentials('DB_PORT')
+    // DB_NAME = credentials('DB_NAME')
+    // }
+
     environment {
-    DB_USER = credentials('DB_USER')  // ID used in Jenkins credentials
-    DB_PASSWORD = credentials('DB_PASSWORD')
-    HOST = credentials('HOST')
-    DB_PORT = credentials('DB_PORT')
-    DB_NAME = credentials('DB_NAME')
+    DB_USER     = "${env.DB_USER}"
+    DB_PASSWORD = "${env.DB_PASSWORD}"
+    HOST        = "${env.HOST}"
+    DB_PORT     = "${env.DB_PORT}"
+    DB_NAME     = "${env.DB_NAME}"
     }
 
     stages {
