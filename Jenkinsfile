@@ -72,7 +72,7 @@
             steps {
                 script {
                     // Copy the pickle file from the container to host (Jenkins workspace)
-                    sh 'docker cp train_container:/app/models/popular_movies.pkl ./popular_movies.pkl'
+                    sh 'docker cp api_container:/app/models/popular_movies.pkl ./popular_movies.pkl'
 
                     // Check if the file exists and is non-empty
                     sh '''
@@ -85,7 +85,7 @@
                     '''
 
                     // Cleanup
-                    sh 'docker rm train_container'
+                    // sh 'docker rm api_container'
                 }
             }
         }
