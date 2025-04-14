@@ -95,7 +95,7 @@
                 script {
                     // sh 'docker cp trainer:/app/models ./models'
                     sh 'docker build -f Dockerfile.run -t netflicks-run .'
-                    sh 'docker run --network=host netflicks-run'
+                    sh 'sh docker run --network=host -v model_volume:/app/models netflicks-run'
                 }
             }
         }
