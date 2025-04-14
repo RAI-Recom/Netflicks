@@ -16,16 +16,7 @@ RUN apt-get update && apt-get install -y curl jq && apt-get clean
 
 WORKDIR /app
 
-# CMD ["sh", "-c", "echo 'Calling FastAPI endpoint...'; curl http://localhost:8082/recommend/2"]
-CMD ["sh", "-c", "\
-    echo 'Calling FastAPI endpoint...'; \
-    curl -s http://localhost:8082/recommend/2 | tee response.json | jq length > count.txt; \
-    if [ $? -ne 0 ]; then \
-        echo '❌ Test failed: Invalid JSON response from API.'; exit 1; \
-    fi; \
-    COUNT=$(cat count.txt); \
-    if [ \"$COUNT\" -eq 20 ]; then \
-        echo '✅ Test passed: API returned 20 movie recommendations.'; \
-    else \
-        echo \"❌ Test failed: Expected 20 recommendations, got $COUNT.\"; exit 1; \
-    fi"]
+ENV FLASK_APP=server.py
+EXPOSE 8082
+
+CMD ["flask", "run", "--host", "0.0.0.0", "--port", "8082"]

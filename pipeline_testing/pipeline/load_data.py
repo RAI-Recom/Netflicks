@@ -16,10 +16,6 @@ def load_config():
                 'dbname': os.getenv('DB_NAME'),  # Corrected to fetch the database name
             }
 
-def load_db_config(config_path="config/db_config.json"):
-    with open(config_path) as f:
-        return json.load(f)
-
 def get_sqlalchemy_engine():
     db = load_config()
     db_uri = f"postgresql://{db['user']}:{db['password']}@{db['host']}:{db['port']}/{db['dbname']}"
