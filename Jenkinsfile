@@ -79,7 +79,7 @@
         stage('Infer Model') {
             steps {
                 script {
-                    sh 'docker build -f Dockerfile.run-t netflicks-run .'
+                    sh 'docker build -f Dockerfile.run -t netflicks-run .'
                     sh 'docker run --network=host netflicks-run'
                 }
             }
