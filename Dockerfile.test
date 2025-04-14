@@ -6,7 +6,7 @@ RUN pip install --no-cache-dir -r requirements.train.txt
 
 COPY pipeline_testing/ .
 
-# VOLUME ["/app/models"]
+VOLUME ["/app/models"]
 RUN mkdir -p /app/models
 
 CMD ["python", "run_training_pipeline.py"]
