@@ -81,14 +81,6 @@
                 }
             }
         }
-        stage('Check Docker Access') {
-            steps {
-                sh 'id'                // check current user
-                sh 'groups'           // check user groups
-                sh 'which docker'     // see if docker is in PATH
-                sh 'docker ps'        // test docker command
-            }
-        }
         stage('Infer Model') {
             steps {
                 script {
