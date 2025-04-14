@@ -1,2 +1,4 @@
 Flask>=2.2.2
 loguru>=0.7.3
+prometheus_client
+pickle5

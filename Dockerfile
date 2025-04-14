@@ -1,10 +1,12 @@
 FROM python:3.10.12
 
 WORKDIR /app
-COPY apis/requirements.txt .
-COPY apis/server.py .
+COPY api/requirements.txt .
+COPY api/server.py .
 COPY models/popular_movies.pkl models/
 COPY models/user_recommendations.pkl models/
+COPY model_training/ model_training/
+COPY config.py .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
