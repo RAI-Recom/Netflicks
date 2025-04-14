@@ -37,7 +37,18 @@
                     sh 'docker rm -f train_container || true'
 
                     // sh 'docker run --network=host test1'
-                    sh 'docker run --network=host --name train_container test1'
+                    // sh 'docker run --network=host --name train_container test1'
+
+                    sh """
+                        docker run --network=host \
+                        --name train_container \
+                        -e DB_USER=${env.DB_USER} \
+                        -e DB_PASSWORD=${env.DB_PASSWORD} \
+                        -e HOST=${env.HOST} \
+                        -e DB_PORT=${env.DB_PORT} \
+                        -e DB_NAME=${env.DB_NAME} \
+                        test1
+                    """
 
                 }
             }
