@@ -20,6 +20,8 @@ COPY /requirements.infer.txt .
 RUN pip install --no-cache-dir -r requirements.infer.txt
 
 VOLUME ["/app/models"]
+
+# COPY models/ ./models/
 COPY api/server.py .
 COPY pipeline_testing/ .
 

@@ -49,6 +49,9 @@
                         -e DB_NAME=${env.DB_NAME} \
                         test
                     """
+                    sh 'docker volume create model_volume'
+                    sh 'docker run --rm -v model_volume:/app/models test'
+                    sh 'docker run -p 8082:8082 -v model_volume:/app/models test'
 
                 }
             }
@@ -79,6 +82,7 @@
         stage('Infer Model') {
             steps {
                 script {
+                    // sh 'docker cp trainer:/app/models ./models'
                     sh 'docker build -f Dockerfile.run -t netflicks-run .'
                     sh 'docker run --network=host netflicks-run'
                 }
