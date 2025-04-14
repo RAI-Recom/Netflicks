@@ -3,7 +3,7 @@ from pipeline import profile_builder
 
 # Load data
 ratings_df = load_data.load_ratings_chunk(limit=10000, offset=0)
-watch_df = load_data.load_watch_chunk(limit=50000, offset=0)
+watch_df = load_data.load_watch_chunk(limit=10000, offset=0)
 movie_df = load_data.load_movies()
 
 # Train popularity model
