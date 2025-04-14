@@ -26,6 +26,7 @@ COPY api/server.py .
 COPY pipeline_testing/ ./pipeline_testing/
 
 ENV FLASK_APP=server.py
+ENV PYTHONPATH="/app"
 EXPOSE 8082
 
 CMD ["flask", "run", "--host", "0.0.0.0", "--port", "8082"]
