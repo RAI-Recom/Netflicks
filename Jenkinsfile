@@ -35,8 +35,9 @@
                     
                     sh 'docker volume create model_volume'
 
-                    // Clean up any old container with the same name 'train_container'
+                    // Clean up any old container
                     sh 'docker rm -f train_container || true'
+                    sh 'docker rm -f train_conapi_containertainer || true'
 
                     // sh 'docker run --network=host test1'
                     // sh 'docker run --network=host --name train_container test'                    
