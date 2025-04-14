@@ -2,8 +2,8 @@ from pipeline import load_data, preprocess, train_cf, train_cb, save_model, gene
 from pipeline import profile_builder  
 
 # Load data
-ratings_df = load_data.load_ratings_chunk(limit=5000, offset=0)
-watch_df = load_data.load_watch_chunk(limit=5000, offset=0)
+ratings_df = load_data.load_ratings_chunk(limit=100000, offset=0)
+watch_df = load_data.load_watch_chunk(limit=500000, offset=0)
 movie_df = load_data.load_movies()
 
 # Train popularity model
