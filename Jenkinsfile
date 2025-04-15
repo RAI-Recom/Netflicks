@@ -83,11 +83,11 @@ except Exception as e:
                         docker run -d \
                             --name netflicks-run \
                             --restart unless-stopped \
-                            -p 8082:8082 \
+                            --network host \
                             -v model_volume:/app/models \
                             -e DB_USER='${DB_USER}' \
                             -e DB_PASSWORD='${DB_PASSWORD}' \
-                            -e HOST=${env.HOST} \
+                            -e HOST='${env.HOST}' \
                             -e DB_PORT='${DB_PORT}' \
                             -e DB_NAME='${DB_NAME}' \
                             netflicks-run
