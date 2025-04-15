@@ -73,7 +73,7 @@ except Exception as e:
         stage('Run Service') {
             steps {
                 script {
-                    sh '''
+                    sh """
                         # Build the service image
                         docker build -f Dockerfile.run -t netflicks-run .
                         
@@ -82,30 +82,30 @@ except Exception as e:
                             --name netflicks-run \
                             -p 8082:8082 \
                             -v model_volume:/app/models \
-                            -e DB_USER=${env.DB_USER} \
-                            -e DB_PASSWORD=${env.DB_PASSWORD} \
-                            -e HOST=172.17.0.1 \
-                            -e DB_PORT=${env.DB_PORT} \
-                            -e DB_NAME=${env.DB_NAME} \
+                            -e DB_USER='${DB_USER}' \
+                            -e DB_PASSWORD='${DB_PASSWORD}' \
+                            -e HOST='172.17.0.1' \
+                            -e DB_PORT='${DB_PORT}' \
+                            -e DB_NAME='${DB_NAME}' \
                             netflicks-run
                         
                         # Wait for the service to be ready
                         timeout=60
-                        while [ $timeout -gt 0 ]; do
+                        while [ \$timeout -gt 0 ]; do
                             if curl -s http://localhost:8082/health > /dev/null; then
                                 echo "Service is up and running"
                                 break
                             fi
                             sleep 5
-                            timeout=$((timeout-5))
+                            timeout=\$((timeout-5))
                         done
                         
-                        if [ $timeout -eq 0 ]; then
+                        if [ \$timeout -eq 0 ]; then
                             echo "Service failed to start within timeout"
                             docker logs netflicks-run
                             exit 1
                         fi
-                    '''
+                    """
                 }
             }
         }
