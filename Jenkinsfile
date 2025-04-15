@@ -77,9 +77,10 @@ except Exception as e:
                         # Build the service image
                         docker build -f Dockerfile.run -t netflicks-run .
                         
-                        # Run the Flask API service
+                        # Run the Flask API service in detached mode with restart policy
                         docker run -d \
                             --name netflicks-run \
+                            --restart unless-stopped \
                             -p 8082:8082 \
                             -v model_volume:/app/models \
                             -e DB_USER='${DB_USER}' \
@@ -105,22 +106,31 @@ except Exception as e:
                             docker logs netflicks-run
                             exit 1
                         fi
+                        
+                        # Keep the service running and monitor it
+                        while true; do
+                            if ! docker ps | grep -q netflicks-run; then
+                                echo "Service stopped unexpectedly"
+                                exit 1
+                            fi
+                            sleep 30
+                        done
                     """
                 }
             }
         }
-        
-        stage('Cleanup') {
-            steps {
-                script {
-                    sh '''
-                        # Always run cleanup
-                        docker rm -f netflicks-train || true
-                        docker rm -f netflicks-run || true
-                        docker volume rm model_volume || true
-                    '''
-                }
-            }
-        }
     }
+    
+    // post {
+    //     always {
+    //         script {
+    //             sh '''
+    //                 # Cleanup on pipeline stop or failure
+    //                 docker stop netflicks-run || true
+    //                 docker rm -f netflicks-run || true
+    //                 docker volume rm model_volume || true
+    //             '''
+    //         }
+    //     }
+    // }
 }
