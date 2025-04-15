@@ -27,6 +27,11 @@
                     sh """
                         docker run --name netflicks-train \
                         -v model_volume:/app/models \
+                        -e DB_USER=${env.DB_USER} \
+                        -e DB_PASSWORD=${env.DB_PASSWORD} \
+                        -e HOST=${env.HOST} \
+                        -e DB_PORT=${env.DB_PORT} \
+                        -e DB_NAME=${env.DB_NAME} \
                         netflicks-train
                     """
                     sh 'docker rm netflicks-train'
