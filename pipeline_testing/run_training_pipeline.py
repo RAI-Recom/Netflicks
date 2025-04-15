@@ -18,9 +18,8 @@ cb_df = preprocess.preprocess_cb(watch_df)
 user_profiles, genre_cols = train_cb.build_user_genre_profiles(watch_df)
 movie_vectors = profile_builder.build_movie_genre_vectors(watch_df, genre_cols)
 
-# Save user profiles
-with open('models/user_profiles.pkl', 'wb') as f:
-    pickle.dump(user_profiles, f)
+# Save profiles
+profile_builder.save_profiles(user_profiles,movie_vectors)
 
 # Train and save models
 cf_model = train_cf.train_cf_model(cf_df)
