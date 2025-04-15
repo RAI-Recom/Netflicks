@@ -4,3 +4,4 @@ pandas
 scikit-learn
 python-dotenv
 sqlalchemy
+psycopg2-binary
