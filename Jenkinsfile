@@ -53,18 +53,18 @@
                     sh '''
                         # Create temporary container to validate model from volume
                         docker run --rm \
-                        -v model_volume:/app/models \
-                        python:3.8 \
-                        python3 -c "
-                            import pickle
-                            try:
-                                with open('/app/models/popular_movies.pkl', 'rb') as f:
-                                    model = pickle.load(f)
-                                    print('Model validation successful')
-                            except Exception as e:
-                                print(f'Model validation failed: {str(e)}')
-                                exit(1)
-                        "
+                            -v model_volume:/app/models \
+                            python:3.8-slim \
+                            python3 -c "
+                                import pickle
+                                try:
+                                    with open('/app/models/popular_movies.pkl', 'rb') as f:
+                                        model = pickle.load(f)
+                                        print('Model validation successful')
+                                except Exception as e:
+                                    print(f'Model validation failed: {str(e)}')
+                                    exit(1)
+                            "
                     '''
                 }
             }
