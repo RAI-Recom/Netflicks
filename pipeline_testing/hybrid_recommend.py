@@ -4,6 +4,7 @@ import pickle
 from sklearn.metrics.pairwise import cosine_similarity
 import json
 from sqlalchemy import create_engine
+from pipeline_testing.pipeline import load_data
 
 # Load models
 cf_model = pickle.load(open("models/cf_model.pkl", "rb"))
@@ -12,9 +13,8 @@ movie_vectors = pd.read_pickle("models/movie_vectors.pkl")
 top_popular_movies = pickle.load(open("models/popular_movies.pkl", "rb"))
 
 # --- Utility to get SQLAlchemy engine ---
-def get_sqlalchemy_engine(config_path="config/db_config.json"):
-    with open(config_path, "r") as f:
-        db = json.load(f)
+def get_sqlalchemy_engine():
+    db = load_data.load_config()
     db_uri = f"postgresql://{db['user']}:{db['password']}@{db['host']}:{db['port']}/{db['dbname']}"
     return create_engine(db_uri)
 
