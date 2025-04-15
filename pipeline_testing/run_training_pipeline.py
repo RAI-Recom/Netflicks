@@ -1,5 +1,6 @@
 from pipeline import load_data, preprocess, train_cf, train_cb, save_model, generate_pop
 from pipeline import profile_builder  
+import pickle
 
 # Load data
 ratings_df = load_data.load_ratings_chunk(limit=10000, offset=0)
@@ -17,7 +18,11 @@ cb_df = preprocess.preprocess_cb(watch_df)
 user_profiles, genre_cols = train_cb.build_user_genre_profiles(watch_df)
 movie_vectors = profile_builder.build_movie_genre_vectors(watch_df, genre_cols)
 
-# # Train and save models
+# Save user profiles
+with open('models/user_profiles.pkl', 'wb') as f:
+    pickle.dump(user_profiles, f)
+
+# Train and save models
 cf_model = train_cf.train_cf_model(cf_df)
 cb_model = train_cb.train_cb_model(cb_df)
 save_model.save_model(cf_model, "models/cf_model.pkl")
