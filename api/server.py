@@ -1,43 +1,17 @@
+import sys
+sys.path.append('.')
+
 from flask import Flask, jsonify, Response
-import pickle
 from loguru import logger
-# from model_training.model_service import load_popularity_model, load_user_recommendations_model
-
-USER_RECOMMENDATIONS_MODEL = "models/user_recommendations.pkl"
-POPULARITY_MODEL = "models/popular_movies.pkl"
-
+from pipeline_testing.hybrid_recommend import hybrid_recommend
 app = Flask(__name__)
 
-def load_user_recommendations_model():
-    try:
-        with open(USER_RECOMMENDATIONS_MODEL, "rb") as f:
-            return pickle.load(f)
-    except FileNotFoundError:
-        logger.error('Error: User recommendation model not found')
-        return {}
-
-# Load Popularity-Based Model for Cold Start Users
-def load_popularity_model():
-    try:
-        with open(POPULARITY_MODEL, "rb") as f:
-            return pickle.load(f)
-    except FileNotFoundError:
-        logger.error('Error: Popularity model not found')
-        return []
-
-popularity_model = load_popularity_model()
-user_recommendations = load_user_recommendations_model()
 
 @app.route('/recommend/<int:user_id>', methods=['GET'])
 def recommend_movies(user_id):
-    try:
-        if user_id in user_recommendations:
-            logger.info("Recommendation from user_recommendations.")
-            return jsonify(user_recommendations[user_id])
-    
-        logger.info("Recommendation from popularity_model.")
-        movie_id_op = [movie[0] for movie in popularity_model[:20]]  # Extract only movie titles
-        return jsonify(movie_id_op)
+    try: 
+        return jsonify(hybrid_recommend(user_id, 20))
+
     except Exception as e:
         logger.error(e)
         return Response('{"error": "Internal Server Error"}', status=500, content_type="application/json")   
