@@ -13,6 +13,13 @@
         stage('Setup') {
             steps {
                 script {
+                    sh """
+                        # run cleanup
+                        docker rm -f netflicks-train || true
+                        docker rm -f netflicks-run || true
+                        docker volume rm model_volume || true
+                    """
+
                     // Create volume and validate environment
                     sh 'docker volume create model_volume'
                     // Validate environment variables
