@@ -74,6 +74,9 @@ except Exception as e:
             steps {
                 script {
                     sh """
+                        // Copy models from volume to the container
+                        sh 'docker cp model_volume:/app/models netflicks-run:/app/models'
+
                         # Build the service image
                         docker build -f Dockerfile.run -t netflicks-run .
                         
