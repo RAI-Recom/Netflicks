@@ -13,7 +13,7 @@ app = Flask(__name__)
 popularity_model = load_popularity_model()
 user_recommendations = load_user_recommendations_model()
 
-# Prometheus Metrics (use namespace clearly)
+# Prometheus Metrics
 REQUEST_COUNT = Counter('movie_recommendation_requests_total', 'Total recommendation requests')
 REQUEST_ERRORS = Counter('movie_recommendation_request_errors_total', 'Total recommendation errors')
 REQUEST_LATENCY = Histogram('movie_recommendation_request_latency_seconds', 'Latency of recommendation requests')
