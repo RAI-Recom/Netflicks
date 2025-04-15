@@ -4,6 +4,8 @@ A machine learning-based movie recommendation system that provides personalized 
 
 ## System Architecture
 
+![System Architecture](images/sys_arch.png)
+
 The Netflicks recommendation system follows a microservices architecture with the following key components:
 
 ### 1. Data Pipeline
@@ -33,31 +35,6 @@ The Netflicks recommendation system follows a microservices architecture with th
 1. Raw data → Kafka → Preprocessing → Database
 2. Database → Model Training → Model Storage
 3. API Request → Model Inference → Recommendation Response
-
-### Deployment Architecture
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  Data Source│────▶│  Kafka      │────▶│Preprocessing│
-└─────────────┘     └─────────────┘     └─────────────┘
-                           │                   │
-                           ▼                   ▼
-                    ┌─────────────┐     ┌─────────────┐
-                    │  Database   │◀────│  Model      │
-                    │             │     │  Training   │
-                    └─────────────┘     └─────────────┘
-                           │                   │
-                           ▼                   ▼
-                    ┌─────────────┐     ┌─────────────┐
-                    │   API       │◀────│  Model      │
-                    │   Service   │     │  Storage    │
-                    └─────────────┘     └─────────────┘
-                           │
-                           ▼
-                    ┌─────────────┐
-                    │   Client    │
-                    │  Requests   │
-                    └─────────────┘
-```
 
 ## Project Structure
 
@@ -159,11 +136,3 @@ python -m pytest testing/
 ## CI/CD
 
 The project uses Jenkins for continuous integration and deployment. The pipeline configuration is defined in the `Jenkinsfile`.
-
-## License
-
-[Add your license information here]
-
-## Contributing
-
-[Add contribution guidelines here] 
