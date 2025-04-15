@@ -10,85 +10,102 @@
     }
 
     stages {
-        stage('Clean Docker Images') {
+        stage('Setup') {
             steps {
                 script {
-                    // Remove old Docker images to ensure fresh builds
-                    sh 'docker rmi -f test || true'
-                    sh 'docker rmi -f netflicks-infer2 || true'
+                    // Create volume and validate environment
+                    sh 'docker volume create model_volume'
+                    // Validate environment variables
                 }
             }
         }
-
+        
         stage('Train Model') {
             steps {
                 script {
-                    sh 'docker build -f Dockerfile.test -t test .'
-                    
-                    sh 'docker volume create model_volume'
-
-                    // Clean up any old container
-                    // sh 'docker rm -f train_container || true'
-                    sh 'docker rm -f api_container || true'
-
-                    // sh """
-                    //     docker run --network=host \
-                    //     --name train_container \
-                    //     -e DB_USER=${env.DB_USER} \
-                    //     -e DB_PASSWORD=${env.DB_PASSWORD} \
-                    //     -e HOST=${env.HOST} \
-                    //     -e DB_PORT=${env.DB_PORT} \
-                    //     -e DB_NAME=${env.DB_NAME} \
-                    //     test
-                    // """
-                    
-                    // sh 'docker run --rm -v model_volume:/app/models test'
+                    sh 'docker build -f Dockerfile.train -t netflicks-train .'
                     sh """
-                        docker run --network=host \
-                        --name api_container \
-                        -p 8083:8082 \
+                        docker run --name netflicks-train \
                         -v model_volume:/app/models \
-                        -e DB_USER=${env.DB_USER} \
-                        -e DB_PASSWORD=${env.DB_PASSWORD} \
-                        -e HOST=${env.HOST} \
-                        -e DB_PORT=${env.DB_PORT} \
-                        -e DB_NAME=${env.DB_NAME} \
-                        test
+                        netflicks-train
                     """
-
+                    sh 'docker rm netflicks-train'
                 }
             }
         }
-
-        stage('Test Model Output') {
+        
+        stage('Validate Model') {
             steps {
                 script {
-                    // Copy the pickle file from the container to host (Jenkins workspace)
-                    sh 'docker cp api_container:/app/models/popular_movies.pkl ./popular_movies.pkl'
-
-                    // Check if the file exists and is non-empty
                     sh '''
-                        if [ ! -s ./popular_movies.pkl ]; then
-                            echo "Test failed: Pickle file is missing or empty."
+                        # Create temporary container to validate model from volume
+                        docker run --rm \
+                        -v model_volume:/app/models \
+                        python:3.8 \
+                        python3 -c "
+                            import pickle
+                            try:
+                                with open('/app/models/popular_movies.pkl', 'rb') as f:
+                                    model = pickle.load(f)
+                                    print('Model validation successful')
+                            except Exception as e:
+                                print(f'Model validation failed: {str(e)}')
+                                exit(1)
+                        "
+                    '''
+                }
+            }
+        }
+        
+        stage('Run Service') {
+            steps {
+                script {
+                    sh '''
+                        # Build the service image
+                        docker build -f Dockerfile.run -t netflicks-run .
+                        
+                        # Run the Flask API service
+                        docker run -d \
+                            --name netflicks-run \
+                            -p 8082:8082 \
+                            -v model_volume:/app/models \
+                            -e DB_USER=${env.DB_USER} \
+                            -e DB_PASSWORD=${env.DB_PASSWORD} \
+                            -e HOST=${env.HOST} \
+                            -e DB_PORT=${env.DB_PORT} \
+                            -e DB_NAME=${env.DB_NAME} \
+                            netflicks-run
+                        
+                        # Wait for the service to be ready
+                        timeout=60
+                        while [ $timeout -gt 0 ]; do
+                            if curl -s http://localhost:8082/health > /dev/null; then
+                                echo "Service is up and running"
+                                break
+                            fi
+                            sleep 5
+                            timeout=$((timeout-5))
+                        done
+                        
+                        if [ $timeout -eq 0 ]; then
+                            echo "Service failed to start within timeout"
+                            docker logs netflicks-run
                             exit 1
-                        else
-                            echo "Test passed: Pickle file generated successfully."
                         fi
                     '''
-
-                    // Cleanup
-                    // sh 'docker rm api_container'
                 }
             }
         }
-        stage('Infer Model') {
+        
+        stage('Cleanup') {
             steps {
                 script {
-                    // sh 'docker cp trainer:/app/models ./models'
-                    sh 'docker build -f Dockerfile.run -t netflicks-run .'
-                    // sh 'docker run --network=host netflicks-run'
-                    sh 'sh docker run --network=host -v model_volume:/app/models netflicks-run'
-
+                    sh '''
+                        # Always run cleanup
+                        docker rm -f netflicks-train || true
+                        docker rm -f netflicks-run || true
+                        docker volume rm model_volume || true
+                    '''
                 }
             }
         }

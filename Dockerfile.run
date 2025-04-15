@@ -16,8 +16,8 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY /requirements.infer.txt .
-RUN pip install --no-cache-dir -r requirements.infer.txt
+COPY /requirements.run.txt .
+RUN pip install --no-cache-dir -r requirements.run.txt
 
 VOLUME ["/app/models"]
 
