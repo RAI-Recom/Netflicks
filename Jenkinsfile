@@ -37,7 +37,7 @@
                         -v model_volume:/app/models \
                         -e DB_USER=${env.DB_USER} \
                         -e DB_PASSWORD=${env.DB_PASSWORD} \
-                        -e HOST=172.17.0.1 \
+                        -e HOST=${env.HOST} \
                         -e DB_PORT=${env.DB_PORT} \
                         -e DB_NAME=${env.DB_NAME} \
                         netflicks-train
