@@ -1,14 +1,13 @@
 FROM python:3.10.12
 
 WORKDIR /app
-COPY api/requirements.txt .
-COPY api/server.py .
-COPY models/popular_movies.pkl models/
-COPY models/user_recommendations.pkl models/
+COPY /requirements.train.txt .
+RUN pip install --no-cache-dir -r requirements.train.txt
+# RUN jenkins-plugin-cli --plugins envinject
 
-RUN pip install --no-cache-dir -r requirements.txt
+COPY pipeline_testing/ .
 
-ENV FLASK_APP=server.py
-EXPOSE 8082
+VOLUME ["/app/models"]
+RUN mkdir -p /app/models
 
-CMD ["flask", "run", "--host", "0.0.0.0", "--port", "8082"]
+CMD ["python", "run_training_pipeline.py"]
