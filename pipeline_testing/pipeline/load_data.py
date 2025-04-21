@@ -53,3 +53,45 @@ def load_movies(limit=1000):
     if limit:
         query += f" LIMIT {limit}"
     return pd.read_sql(query, con=engine)
+
+def load_eval_ratings(cutoff="2025-03-01 00:00:00", mode="train", limit=10000, offset=0):
+    engine = get_sqlalchemy_engine()
+
+    # Decide operator based on mode
+    if mode == "train":
+        time_condition = f"r.updated_at <= '{cutoff}'"
+    elif mode == "test":
+        time_condition = f"r.updated_at > '{cutoff}'"
+    else:
+        raise ValueError("Mode must be either 'train' or 'test'")
+
+    query = f"""
+        SELECT r.user_id, r.movie_id, m.title AS movie_title, r.rating, r.updated_at
+        FROM ratings r
+        JOIN movies m ON r.movie_id = m.movie_id
+        WHERE r.rating IS NOT NULL AND {time_condition}
+        ORDER BY r.updated_at
+        LIMIT {limit} OFFSET {offset};
+    """
+    return pd.read_sql(query, con=engine)
+
+def load_eval_watch(cutoff="2025-03-01 00:00:00", mode="train", limit=10000, offset=0):
+    engine = get_sqlalchemy_engine()
+
+    # Decide operator based on mode
+    if mode == "train":
+        time_condition = f"r.updated_at <= '{cutoff}'"
+    elif mode == "test":
+        time_condition = f"r.updated_at > '{cutoff}'"
+    else:
+        raise ValueError("Mode must be either 'train' or 'test'")
+
+    query = f"""
+        SELECT w.user_id, w.movie_id, w.watched_minutes, m.title, m.genres, m.plot
+        FROM watch_history w
+        JOIN movies m ON w.movie_id = m.movie_id
+        WHERE w.watched_minutes IS NOT NULL AND {time_condition}
+        ORDER BY w.updated_at
+        LIMIT {limit} OFFSET {offset};
+    """
+    return pd.read_sql(query, con=engine)
