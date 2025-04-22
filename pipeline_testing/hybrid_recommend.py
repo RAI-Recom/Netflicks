@@ -4,7 +4,7 @@ import pickle
 from sklearn.metrics.pairwise import cosine_similarity
 import json
 from sqlalchemy import create_engine
-from pipeline_testing.pipeline import load_data
+from pipeline_testing.model_pipelines import load_data
 
 # Load models
 cf_model = pickle.load(open("models/cf_model.pkl", "rb"))

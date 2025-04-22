@@ -10,9 +10,9 @@ def load_config():
     return {
                 'host': os.getenv('HOST'),
                 'port': os.getenv('DB_PORT'),
-                'user': os.getenv('DB_USER'),  # Fetch username from .env
-                'password': os.getenv('DB_PASSWORD'),  # Fetch password from .env
-                'dbname': os.getenv('DB_NAME'),  # Corrected to fetch the database name
+                'user': os.getenv('DB_USER'),
+                'password': os.getenv('DB_PASSWORD'),
+                'dbname': os.getenv('DB_NAME'),
             }
 
 def get_sqlalchemy_engine():

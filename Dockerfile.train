@@ -10,4 +10,4 @@ COPY pipeline_testing/ .
 VOLUME ["/app/models"]
 RUN mkdir -p /app/models
 
-CMD ["python", "run_training_pipeline.py"]
+CMD ["python", "training_pipeline.py"]

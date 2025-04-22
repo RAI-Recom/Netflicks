@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 import ast
 import csv
 from datetime import datetime
+import pandas as pd
 
 class DBManager:
     """
@@ -154,7 +155,7 @@ class DBManager:
             self.cursor.execute(create_ratings_table)
             self.cursor.execute(create_watch_history_table)
             self.conn.commit()
-            print("Tables created successfully.")
+            print("Tables created/checked successfully.")
             
             # Create the function and trigger
             self.create_function_and_trigger()
@@ -583,8 +584,6 @@ class DBManager:
                     if skipped_rows < 10:  # Limit error messages
                         print(f"Error processing row {row_num}: {e}")
                         print(f"Problematic row: {row}")
-                    elif skipped_rows == 10:
-                        print("Further error messages suppressed...")
             
             # Insert any remaining rows
             if batch:
@@ -786,4 +785,93 @@ class DBManager:
                     print(f"Problematic row: {row}")
         
         print(f"Total rows inserted: {rows_inserted}, skipped: {skipped_rows}")
-        return rows_inserted 
+        return rows_inserted
+    
+    def get_movie_ratings_and_votes(self, limit: Optional[int] = None) -> pd.DataFrame:
+        """
+        Get movie ratings and votes from the movies table where both fields are not null.
+        
+        Args:
+            limit: Optional limit on the number of records to return
+            
+        Returns:
+            DataFrame containing movie_id, title, rating, votes, and genres
+        """
+        if not self.conn or self.conn.closed:
+            self.connect()
+            
+        query = """
+            SELECT movie_id, title, rating, votes, genres
+            FROM movies
+            WHERE rating IS NOT NULL AND votes IS NOT NULL
+        """
+        
+        if limit is not None:
+            query += f" LIMIT {limit}"
+            
+        try:
+            return pd.read_sql_query(query, self.conn)
+        except Exception as e:
+            self.logger.error(f"Error retrieving movie ratings and votes: {str(e)}")
+            return pd.DataFrame(columns=['movie_id', 'title', 'rating', 'votes', 'genres'])
+    
+    def load_watch_chunk(self, limit: Optional[int] = None, offset: int = 0) -> pd.DataFrame:
+        """
+        Load a chunk of watch history data along with movie details.
+
+        Args:
+            limit: The maximum number of records to return (optional).
+            offset: The number of records to skip before starting to return records.
+
+        Returns:
+            DataFrame containing user_id, movie_id, watched_minutes, title and genres.
+        """
+        if not self.conn or self.conn.closed:
+            self.connect()
+        
+        query = """
+            SELECT w.user_id, w.movie_id, w.watched_minutes, m.title, m.genres
+            FROM watch_history w
+            JOIN movies m ON w.movie_id = m.movie_id
+            WHERE m.genres IS NOT NULL  -- Check if genres is not null
+            ORDER BY w.updated_at
+        """
+        
+        if limit is not None:
+            query += f" LIMIT {limit} OFFSET {offset};"
+        else:
+            query += f" OFFSET {offset};"
+        
+        try:
+            return pd.read_sql_query(query, self.conn)
+        except Exception as e:
+            self.logger.error(f"Error loading watch history chunk: {str(e)}")
+            return pd.DataFrame(columns=['user_id', 'movie_id', 'watched_minutes', 'title', 'genres']) 
+        
+    def load_ratings_chunk(self, limit: Optional[int] = None, offset: int = 0) -> pd.DataFrame:
+        """
+        Load a chunk of ratings data along with movie details.
+
+        Args:
+            limit: The maximum number of records to return (optional).
+            offset: The number of records to skip before starting to return records.
+
+        Returns:
+            DataFrame containing user_id, movie_id, rating, title, and genres.
+        """
+        if not self.conn or self.conn.closed:
+            self.connect()
+        
+        query = f"""
+            SELECT r.user_id, r.movie_id, r.rating, m.title, m.genres
+            FROM ratings r
+            JOIN movies m ON r.movie_id = m.movie_id
+            ORDER BY r.updated_at
+            LIMIT {limit} OFFSET {offset};
+        """
+        
+        try:
+            return pd.read_sql_query(query, self.conn)
+        except Exception as e:
+            self.logger.error(f"Error loading ratings chunk: {str(e)}")
+            return pd.DataFrame(columns=['user_id', 'movie_id', 'rating', 'title', 'genres'])
