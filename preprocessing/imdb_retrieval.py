@@ -9,6 +9,16 @@ def fetch_movies_by_title(titles, output_csv_path):
     
     file_exists = os.path.isfile(output_csv_path)
     titles_count = len(titles)
+    
+    # Read existing movies if file exists
+    existing_movies = set()
+    if file_exists:
+        with open(output_csv_path, mode='r', newline='', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            next(reader)  # Skip header row
+            for row in reader:
+                existing_movies.add(row[1].replace("+", " "))  # Store movie titles
+    
     logger.info(f"Fetching data for {titles_count} movies...")
     
     with open(output_csv_path, mode='a' if file_exists else 'w', newline='', encoding='utf-8') as file:
@@ -17,6 +27,11 @@ def fetch_movies_by_title(titles, output_csv_path):
             writer.writerow(['movie_id', 'movie_title_id', 'title', 'year', 'rating', 'genres', 'plot'])
         
         for title in titles:
+            # Skip if movie already exists
+            if title in existing_movies:
+                logger.info(f"({titles.index(title) + 1}/{titles_count}) Skipping existing movie: {title}")
+                continue
+                
             search_results = ia.search_movie(title)
             try:
                 if search_results:
@@ -33,11 +48,12 @@ def fetch_movies_by_title(titles, output_csv_path):
                         movie['plot'][0].split('::')[0] if movie.get('plot') else 'N/A'
                     ])
                     logger.info(f"({titles.index(title) + 1}/{titles_count}) Retrieved data for: {title}")
-                    # time.sleep(1)  # Rate limiting to avoid throttling
+                    time.sleep(2)  # Add delay between requests to avoid rate limiting
                 else:
                     logger.error(f"No results found for: {title}")
             except Exception as e:
                 logger.error(f"An error occurred while processing: {title}: {e}")
+                time.sleep(5)  # Longer delay after an error
 
 def read_movie_titles_from_csv(filepath):
     titles = []
