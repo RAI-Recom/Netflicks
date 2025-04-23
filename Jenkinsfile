@@ -7,7 +7,7 @@
     HOST        = "${env.HOST}"
     DB_PORT     = "${env.DB_PORT}"
     DB_NAME     = "${env.DB_NAME}"
-    API_PORT    = env.BRANCH_NAME == 'main' ? "${env.PROD_API_PORT}" : "${env.TEST_API_PORT}"
+    env.API_PORT = (env.BRANCH_NAME == 'main') ? "${env.PROD_API_PORT}" : "${env.TEST_API_PORT}"
     }
 
     stages {
@@ -88,7 +88,7 @@ except Exception as e:
                             -v model_volume:/app/models \
                             -e DB_USER='${DB_USER}' \
                             -e DB_PASSWORD='${DB_PASSWORD}' \
-                            -e HOST='${env.HOST}' \
+                            -e HOST='${HOST}' \
                             -e DB_PORT='${DB_PORT}' \
                             -e DB_NAME='${DB_NAME}' \
                             netflicks-run
