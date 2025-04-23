@@ -1,6 +1,3 @@
-import sys
-sys.path.append('.')
-
 import pickle
 from db.db_manager import DBManager
 from pipeline.model_pipeline.collaborative_filtering import CollaborativeFiltering
