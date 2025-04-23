@@ -7,6 +7,7 @@
     HOST        = "${env.HOST}"
     DB_PORT     = "${env.DB_PORT}"
     DB_NAME     = "${env.DB_NAME}"
+    API_PORT    = "${env.API_PORT}"
     }
 
     stages {
@@ -94,7 +95,7 @@
                         
                         # Quick health check
                         sleep 5
-                        if curl -s http://localhost:8082/health > /dev/null; then
+                        if curl -s http://localhost:'${env.DB_PORT}'/health > /dev/null; then
                             echo "Service deployed successfully"
                         else
                             echo "Service deployment completed. Health check pending."
