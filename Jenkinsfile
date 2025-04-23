@@ -95,7 +95,7 @@ except Exception as e:
                         
                         # Quick health check
                         sleep 5
-                        if curl -s http://localhost:'${env.DB_PORT}'/health > /dev/null; then
+                        if curl -s http://localhost:'${env.API_PORT}'/health > /dev/null; then
                             echo "Service deployed successfully"
                         else
                             echo "Service deployment completed. Health check pending."
