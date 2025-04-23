@@ -5,9 +5,10 @@ COPY /requirements.train.txt .
 RUN pip install --no-cache-dir -r requirements.train.txt
 # RUN jenkins-plugin-cli --plugins envinject
 
-COPY pipeline/ .
+COPY pipeline/ pipeline/
+COPY db/ db/
 
 VOLUME ["/app/models"]
 RUN mkdir -p /app/models
 
-CMD ["python", "training_pipeline.py"]
+CMD ["python", "pipeline/training_pipeline.py"]
