@@ -27,6 +27,7 @@ COPY pipeline/ ./pipeline/
 
 ENV FLASK_APP=server.py
 ENV PYTHONPATH="/app"
-EXPOSE 8082
 
-CMD ["flask", "run", "--host", "0.0.0.0", "--port", "8082"]
+# CMD ["flask", "run", "--host", "0.0.0.0"]
+
+CMD ["python", "server.py"]
