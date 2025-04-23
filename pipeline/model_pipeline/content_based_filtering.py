@@ -9,13 +9,14 @@ class ContentBasedFiltering:
     A class for content-based filtering recommendation system.
     """
     
-    def __init__(self):
+    def __init__(self, watch_df):
         """Initialize the ContentBasedFiltering model."""
         self.genre_cols = []
         self.genre_matrix = None
         self.sim_matrix = None
         self.movie_ids = []
         self.model = {}
+        self.watch_df = watch_df
         
     def assign_watch_weight(self, minutes: float) -> float:
         """
@@ -37,7 +38,8 @@ class ContentBasedFiltering:
             return -0.5
         return 0.0
     
-    def build_user_genre_profiles(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
+    def build_user_genre_profiles(self, user_path: str = "models/user_profiles.pkl"
+                                  ) -> Tuple[pd.DataFrame, List[str]]:
         """
         Build user genre profiles from watch history.
         
@@ -49,27 +51,27 @@ class ContentBasedFiltering:
         """
         
         # Extract all unique genres
-        all_genres = set(g for genres in df["genres"] for g in genres)
+        all_genres = set(g for genres in self.watch_df["genres"] for g in genres)
         genre_cols = []
         
         # Create one-hot encoded columns for each genre
         for genre in all_genres:
             col = f"genre_{genre.strip().replace(' ', '_').lower()}"
-            df[col] = df["genres"].apply(lambda x: int(genre in x))
+            self.watch_df[col] = self.watch_df["genres"].apply(lambda x: int(genre in x))
             genre_cols.append(col)
         
         # Apply watch weight
-        df["watch_weight"] = df["watched_minutes"].apply(self.assign_watch_weight)
+        self.watch_df["watch_weight"] = self.watch_df["watched_minutes"].apply(self.assign_watch_weight)
         
         # Weight genre columns by watch weight
         for col in genre_cols:
-            df[col] = df[col] * df["watch_weight"]
+            self.watch_df[col] = self.watch_df[col] * self.watch_df["watch_weight"]
         
         # Group by user and sum weighted vectors
-        user_profiles = df.groupby("user_id")[genre_cols].sum()
+        self.user_profiles = self.watch_df.groupby("user_id")[genre_cols].sum()
+        self.user_profiles.to_pickle(user_path)
         
         self.genre_cols = genre_cols
-        return user_profiles, genre_cols
     
     def one_hot_encode_genres(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -97,7 +99,28 @@ class ContentBasedFiltering:
         self.genre_cols = [col for col in df.columns if col.startswith("genre_")]
         return df
     
-    def train(self, df: pd.DataFrame) -> Dict[str, Any]:
+    def build_movie_genre_vectors(self, movie_path: str = "models/movie_vectors.pkl"
+                                  ) -> pd.DataFrame:
+        """
+        Creates a movie feature matrix using genre columns.
+        
+        Args:
+            watch_df: DataFrame containing watch history with 'movie_id' and 'genres' columns.
+        
+        Returns:
+            DataFrame representing movie feature vectors.
+        """
+        movie_df = self.watch_df.drop_duplicates("movie_id")[["movie_id", "genres"]]
+        movie_df["genres"] = movie_df["genres"].apply(lambda x: x.split() if isinstance(x, str) else [])
+
+        for col in self.genre_cols:
+            genre = col.replace("genre_", "").replace("_", " ").title()
+            movie_df[col] = movie_df["genres"].apply(lambda x: int(genre in x))
+
+        self.movie_vectors = movie_df.set_index("movie_id")[self.genre_cols]
+        self.movie_vectors.to_pickle(movie_path)
+
+    def train(self) -> Dict[str, Any]:
         """
         Train the content-based filtering model.
         
@@ -108,7 +131,7 @@ class ContentBasedFiltering:
             Dictionary containing the trained model
         """
         # One-hot encode genres
-        df = self.one_hot_encode_genres(df)
+        df = self.one_hot_encode_genres(self.watch_df)
         
         # Extract genre matrix
         genre_matrix = df[df.columns[df.columns.str.startswith("genre_")]]
@@ -159,8 +182,3 @@ class ContentBasedFiltering:
         recommended_ids = [self.movie_ids[idx] for idx in similar_indices]
         
         return recommended_ids
-
-
-def build_user_genre_profiles(df):
-    model = ContentBasedFiltering()
-    return model.build_user_genre_profiles(df)

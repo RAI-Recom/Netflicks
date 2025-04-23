@@ -53,6 +53,10 @@ class DBManager:
         logger = logging.getLogger('DBManager')
         logger.setLevel(logging.ERROR)  # Changed from INFO to ERROR
         
+        # Suppress UserWarning from pandas
+        logging.captureWarnings(True)  # Capture warnings and send them to the logging system
+        logger.addFilter(lambda record: 'UserWarning' not in record.getMessage())  # Filter out UserWarnings
+        
         if not logger.handlers:
             handler = logging.StreamHandler()
             formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -875,3 +879,119 @@ class DBManager:
         except Exception as e:
             self.logger.error(f"Error loading ratings chunk: {str(e)}")
             return pd.DataFrame(columns=['user_id', 'movie_id', 'rating', 'title', 'genres'])
+
+    def load_eval_ratings(self, cutoff: str = "2025-03-01 00:00:00", mode: str = "train", 
+                          limit: int = 10000, offset: int = 0) -> pd.DataFrame:
+        """
+        Load evaluation ratings from the database.
+
+        Args:
+            cutoff: The cutoff date for filtering ratings.
+            mode: Mode to determine which ratings to load ('train' or 'test').
+            limit: Maximum number of records to return.
+            offset: Number of records to skip.
+
+        Returns:
+            DataFrame containing user_id, movie_id, movie_title, rating, and updated_at.
+        """
+        if not self.conn or self.conn.closed:
+            self.connect()  # Ensure the connection is established
+
+        # Decide operator based on mode
+        if mode == "train":
+            time_condition = f"r.updated_at <= '{cutoff}'"
+        elif mode == "test":
+            time_condition = f"r.updated_at > '{cutoff}'"
+        else:
+            raise ValueError("Mode must be either 'train' or 'test'")
+
+        query = f"""
+            SELECT r.user_id, r.movie_id, m.title AS movie_title, r.rating, r.updated_at
+            FROM ratings r
+            JOIN movies m ON r.movie_id = m.movie_id
+            WHERE r.rating IS NOT NULL AND {time_condition}
+            ORDER BY r.updated_at
+            LIMIT {limit} OFFSET {offset};
+        """
+        
+        try:
+            self.cursor.execute(query)
+            rows = self.cursor.fetchall()
+            columns = [desc[0] for desc in self.cursor.description]  # Get column names
+            return pd.DataFrame(rows, columns=columns)  # Convert to DataFrame
+        except Exception as e:
+            self.logger.error(f"Error loading evaluation ratings: {str(e)}")
+            return pd.DataFrame()  # Return an empty DataFrame on error
+
+    def load_eval_watch(self, cutoff: str = "2025-03-01 00:00:00", mode: str = "train", 
+                         limit: int = 10000, offset: int = 0) -> pd.DataFrame:
+        """
+        Load evaluation watch history from the database.
+
+        Args:
+            cutoff: The cutoff date for filtering watch history.
+            mode: Mode to determine which watch history to load ('train' or 'test').
+            limit: Maximum number of records to return.
+            offset: Number of records to skip.
+
+        Returns:
+            DataFrame containing user_id, movie_id, watched_minutes, title, and genres.
+        """
+        if not self.conn or self.conn.closed:
+            self.connect()  # Ensure the connection is established
+
+        # Decide operator based on mode
+        if mode == "train":
+            time_condition = f"w.updated_at <= '{cutoff}'"
+        elif mode == "test":
+            time_condition = f"w.updated_at > '{cutoff}'"
+        else:
+            raise ValueError("Mode must be either 'train' or 'test'")
+
+        query = f"""
+            SELECT w.user_id, w.movie_id, w.watched_minutes, m.title, m.genres, m.plot
+            FROM watch_history w
+            JOIN movies m ON w.movie_id = m.movie_id
+            WHERE w.watched_minutes IS NOT NULL AND {time_condition}
+            ORDER BY w.updated_at
+            LIMIT {limit} OFFSET {offset};
+        """
+        
+        try:
+            self.cursor.execute(query)
+            rows = self.cursor.fetchall()
+            columns = [desc[0] for desc in self.cursor.description]  # Get column names
+            return pd.DataFrame(rows, columns=columns)  # Convert to DataFrame
+        except Exception as e:
+            self.logger.error(f"Error loading evaluation watch history: {str(e)}")
+            return pd.DataFrame()  # Return an empty DataFrame on error
+
+    def load_movies(self, limit: Optional[int] = 1000) -> pd.DataFrame:
+        """
+        Load movies from the database.
+
+        Args:
+            limit: Maximum number of records to return.
+
+        Returns:
+            DataFrame containing movie_id, title, rating, votes, and genres.
+        """
+        if not self.conn or self.conn.closed:
+            self.connect()  # Ensure the connection is established
+
+        query = """
+            SELECT movie_id, title, rating, votes, genres
+            FROM movies
+            WHERE rating IS NOT NULL AND votes IS NOT NULL
+        """
+        if limit:
+            query += f" LIMIT {limit};"
+
+        try:
+            self.cursor.execute(query)
+            rows = self.cursor.fetchall()
+            columns = [desc[0] for desc in self.cursor.description]  # Get column names
+            return pd.DataFrame(rows, columns=columns)  # Convert to DataFrame
+        except Exception as e:
+            self.logger.error(f"Error loading movies: {str(e)}")
+            return pd.DataFrame()  # Return an empty DataFrame on error
