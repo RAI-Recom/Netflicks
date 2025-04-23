@@ -2,11 +2,10 @@ import sys
 sys.path.append('.')
 
 import pickle
-from pipeline_testing.model_pipelines import load_data, preprocess, train_cf
-from pipeline_testing.model_pipelines import profile_builder  
-from pipeline_testing.model_pipelines.popularity_model import PopularityModel
 from db.db_manager import DBManager
-from pipeline_testing.model_pipelines.content_based_filtering import ContentBasedFiltering
+from pipeline.model_pipeline.collaborative_filtering import CollaborativeFiltering
+from pipeline.model_pipeline.popularity_model import PopularityModel
+from pipeline.model_pipeline.content_based_filtering import ContentBasedFiltering
 
 
 class TrainingPipeline:
@@ -29,7 +28,8 @@ class TrainingPipeline:
         self.watch_limit = watch_limit
         self.watch_offset = watch_offset
         self.db_manager = DBManager()
-        self.content_based_filtering = ContentBasedFiltering()
+        self.watch_df = self.db_manager.load_watch_chunk(limit=self.watch_limit, offset=self.watch_offset)
+        self.content_based_filtering = ContentBasedFiltering(self.watch_df)
         
     def load_data(self):
         """Load all necessary data for training."""
@@ -38,22 +38,20 @@ class TrainingPipeline:
     def train_popularity_model(self):
         """Train and save the popularity model."""
         popularity_model = PopularityModel()
-        self.watch_df = self.db_manager.load_watch_chunk(limit=self.watch_limit, offset=self.watch_offset)
         self.movies_df = self.db_manager.get_movie_ratings_and_votes()
         popularity_model.train_and_save(self.movies_df)
         return self
     
     def build_profiles(self):
         """Build and save user and movie profiles."""
-        self.user_profiles, self.genre_cols = self.content_based_filtering.build_user_genre_profiles(self.watch_df)
-        self.movie_vectors = profile_builder.build_movie_genre_vectors(self.watch_df, self.genre_cols)
-        profile_builder.save_profiles(self.user_profiles, self.movie_vectors)
+        self.content_based_filtering.build_user_genre_profiles()
+        self.content_based_filtering.build_movie_genre_vectors()
         return self
     
     def train_content_based_filtering_model(self):
         """Train and save content-based model."""
         self.watch_df["genres"] = self.watch_df["genres"].apply(lambda g: g if isinstance(g, list) else [])
-        cb_model = self.content_based_filtering.train(self.watch_df)
+        cb_model = self.content_based_filtering.train()
         self.save_model(cb_model, "models/cb_model.pkl")
         return self
     
@@ -61,8 +59,10 @@ class TrainingPipeline:
         """Train and save collaborative filtering model."""
         ratings_df = self.db_manager.load_ratings_chunk(limit=self.ratings_limit, offset=self.ratings_offset)
         ratings_df = ratings_df.dropna(subset=["rating"]).copy()
-        cf_model = train_cf.train_cf_model(ratings_df)
-        self.save_model(cf_model, "models/cf_model.pkl")
+        cf_model = CollaborativeFiltering(n_components=50)
+        cf_model.train(ratings_df)
+        model_info = cf_model.get_model_info()
+        self.save_model(model_info, "models/cf_model.pkl")
         return self
     
     def save_model(self, obj, path):

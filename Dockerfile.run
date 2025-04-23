@@ -23,7 +23,7 @@ VOLUME ["/app/models"]
 
 # COPY models/ ./models/
 COPY api/server.py .
-COPY pipeline_testing/ ./pipeline_testing/
+COPY pipeline/ ./pipeline/
 
 ENV FLASK_APP=server.py
 ENV PYTHONPATH="/app"
