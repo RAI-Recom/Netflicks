@@ -7,13 +7,13 @@
     HOST        = "${env.HOST}"
     DB_PORT     = "${env.DB_PORT}"
     DB_NAME     = "${env.DB_NAME}"
-    env.API_PORT = (env.BRANCH_NAME == 'main') ? "${env.PROD_API_PORT}" : "${env.TEST_API_PORT}"
     }
 
     stages {
         stage('Setup') {
             steps {
                 script {
+                    env.API_PORT = (env.BRANCH_NAME == 'main') ? "${env.PROD_API_PORT}" : "${env.TEST_API_PORT}"
                     sh """
                         # run cleanup
                         docker stop netflicks-run || true
@@ -95,7 +95,7 @@ except Exception as e:
                         
                         # Quick health check
                         sleep 5
-                        if curl -s http://localhost:'${API_PORT}'/health > /dev/null; then
+                        if curl -s http://localhost:'${env.API_PORT}'/health > /dev/null; then
                             echo "Service deployed successfully"
                         else
                             echo "Service deployment completed. Health check pending."
