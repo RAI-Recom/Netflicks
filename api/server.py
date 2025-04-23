@@ -3,7 +3,7 @@ sys.path.append('.')
 
 from flask import Flask, jsonify, Response
 from loguru import logger
-from pipeline_testing.hybrid_recommend import hybrid_recommend
+from pipeline.hybrid_recommend import hybrid_recommend
 import os
 from dotenv import load_dotenv
 load_dotenv()
