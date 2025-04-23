@@ -7,7 +7,7 @@
     HOST        = "${env.HOST}"
     DB_PORT     = "${env.DB_PORT}"
     DB_NAME     = "${env.DB_NAME}"
-    API_PORT    = env.BRANCH_NAME == "main" ? "${env.PROD_API_PORT}" : "${env.TEST_API_PORT}"
+    API_PORT    = env.BRANCH_NAME == 'main' ? "${env.PROD_API_PORT}" : "${env.TEST_API_PORT}"
     }
 
     stages {
