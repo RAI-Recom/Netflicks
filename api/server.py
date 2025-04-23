@@ -4,6 +4,10 @@ sys.path.append('.')
 from flask import Flask, jsonify, Response
 from loguru import logger
 from pipeline_testing.hybrid_recommend import hybrid_recommend
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 app = Flask(__name__)
 
 
@@ -33,4 +37,4 @@ def service_unavailable(e):
 
 if __name__ == '__main__':
     logger.add("api.log")
-    app.run(host='0.0.0.0', port=8082, debug=True)  
+    app.run(host='0.0.0.0', port=os.getenv('API_PORT'), debug=True)  

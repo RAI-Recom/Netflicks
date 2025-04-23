@@ -77,7 +77,7 @@
                     sh """
 
                         # Build the service image
-                        docker build -f Dockerfile.testrun -t netflicks-run .
+                        docker build -f Dockerfile.run -t netflicks-run .
                         
                         # Run the Flask API service in detached mode with restart policy
                         docker run -d \
