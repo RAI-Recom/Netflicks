@@ -1,0 +1,18 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY /requirements.run.txt .
+RUN pip install --no-cache-dir -r requirements.run.txt
+
+VOLUME ["/app/models"]
+
+# COPY models/ ./models/
+COPY api/server.py .
+COPY pipeline_testing/ ./pipeline_testing/
+
+ENV FLASK_APP=server.py
+ENV PYTHONPATH="/app"
+EXPOSE 9092
+
+CMD ["flask", "run", "--host", "0.0.0.0", "--port", "9092"]
