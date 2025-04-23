@@ -7,7 +7,7 @@
     HOST        = "${env.HOST}"
     DB_PORT     = "${env.DB_PORT}"
     DB_NAME     = "${env.DB_NAME}"
-    API_PORT    = "${env.API_PORT}"
+    API_PORT    = env.BRANCH_NAME == 'main' ? "${env.PROD_API_PORT}" : "${env.TEST_API_PORT}"
     }
 
     stages {
@@ -37,11 +37,11 @@
                         docker run --network=host \
                         --name netflicks-train \
                         -v model_volume:/app/models \
-                        -e DB_USER=${env.DB_USER} \
-                        -e DB_PASSWORD=${env.DB_PASSWORD} \
-                        -e HOST=${env.HOST} \
-                        -e DB_PORT=${env.DB_PORT} \
-                        -e DB_NAME=${env.DB_NAME} \
+                        -e DB_USER=${DB_USER} \
+                        -e DB_PASSWORD=${DB_PASSWORD} \
+                        -e HOST=${HOST} \
+                        -e DB_PORT=${DB_PORT} \
+                        -e DB_NAME=${DB_NAME} \
                         netflicks-train
                     """
                     sh 'docker rm netflicks-train'
@@ -95,7 +95,7 @@ except Exception as e:
                         
                         # Quick health check
                         sleep 5
-                        if curl -s http://localhost:'${env.API_PORT}'/health > /dev/null; then
+                        if curl -s http://localhost:'${API_PORT}'/health > /dev/null; then
                             echo "Service deployed successfully"
                         else
                             echo "Service deployment completed. Health check pending."
