@@ -1,4 +1,4 @@
-    pipeline {
+pipeline {
     agent any
 
     environment {
@@ -14,8 +14,8 @@
             steps {
                 script {
                     env.API_PORT = (env.BRANCH_NAME == 'main') ? '8082' : '9092'
-                    env.DOCKER_NAME_RUN = (env.BRANCH_NAME == 'main') ? netflicks-run : netflicks-test-run
-                    env.DOCKER_NAME_TRAIN = (env.BRANCH_NAME == 'main') ? netflicks-train : netflicks-test-train
+                    env.DOCKER_NAME_RUN = (env.BRANCH_NAME == 'main') ? 'netflicks-run' : 'netflicks-test-run'
+                    env.DOCKER_NAME_TRAIN = (env.BRANCH_NAME == 'main') ? 'netflicks-train' : 'netflicks-test-train'
 
                     sh """
                         # run cleanup
