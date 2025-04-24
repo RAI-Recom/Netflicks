@@ -14,8 +14,8 @@ pipeline {
             steps {
                 script {
                     env.API_PORT = (env.BRANCH_NAME == 'main') ? '8082' : '9092'
-                    env.DOCKER_NAME_RUN = (env.BRANCH_NAME == 'main') ? 'netflicks-run' : 'netflicks-test-run'
-                    env.DOCKER_NAME_TRAIN = (env.BRANCH_NAME == 'main') ? 'netflicks-train' : 'netflicks-test-train'
+                    env.DOCKER_NAME_RUN = (env.BRANCH_NAME == 'main') ? 'netflicks-run' : 'netflicks_test-run'
+                    env.DOCKER_NAME_TRAIN = (env.BRANCH_NAME == 'main') ? 'netflicks-train' : 'netflicks_test-train'
                     env.MODEL_VOLUME = (env.BRANCH_NAME == 'main') ? 'model_volume' : 'model_volume_test'
 
                     sh """
@@ -27,7 +27,7 @@ pipeline {
                     """
 
                     // Create volume and validate environment
-                    sh 'docker volume create ${env.MODEL_VOLUME}'
+                    sh "docker volume create ${env.MODEL_VOLUME}"
                     // Validate environment variables
                 }
             }
@@ -36,7 +36,7 @@ pipeline {
         stage('Train Model') {
             steps {
                 script {
-                    sh 'docker build -f Dockerfile.train -t ${env.DOCKER_NAME_TRAIN} .'
+                    sh "docker build -f Dockerfile.train -t ${env.DOCKER_NAME_TRAIN} ."
                     sh """
                         docker run --network=host \
                         --name ${env.DOCKER_NAME_TRAIN} \
@@ -48,7 +48,7 @@ pipeline {
                         -e DB_NAME=${DB_NAME} \
                         ${env.DOCKER_NAME_TRAIN}
                     """
-                    sh 'docker rm ${env.DOCKER_NAME_TRAIN}'
+                    sh "docker rm ${env.DOCKER_NAME_TRAIN}"
                 }
             }
         }
@@ -79,8 +79,7 @@ except Exception as e:
         stage('Run Service') {
             steps {
                 script {
-                    sh """
-
+                    sh """#!/usr/bin/env bash
                         # Build the service image
                         docker build -f Dockerfile.run -t ${env.DOCKER_NAME_RUN} .
                         
