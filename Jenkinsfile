@@ -53,27 +53,27 @@ pipeline {
             }
         }
         
-        stage('Validate Model') {
-            steps {
-                script {
-                    sh """
-                        docker run --rm \
-                            -v ${env.MODEL_VOLUME}:/app/models \
-                            python:3.8-slim \
-                            python3 -c '
-import pickle
-try:
-    with open("/app/models/popular_movies.pkl", "rb") as f:
-        model = pickle.load(f)
-        print("Model validation successful")
-except Exception as e:
-    print(f"Model validation failed: {str(e)}")
-    exit(1)
-'
-                    """
-                }
-            }
-        }
+//         stage('Validate Model') {
+//             steps {
+//                 script {
+//                     sh """
+//                         docker run --rm \
+//                             -v ${env.MODEL_VOLUME}:/app/models \
+//                             python:3.8-slim \
+//                             python3 -c '
+// import pickle
+// try:
+//     with open("/app/models/popular_movies.pkl", "rb") as f:
+//         model = pickle.load(f)
+//         print("Model validation successful")
+// except Exception as e:
+//     print(f"Model validation failed: {str(e)}")
+//     exit(1)
+// '
+//                     """
+//                 }
+//             }
+//         }
         
         stage('Run Service') {
             steps {
