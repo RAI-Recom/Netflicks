@@ -68,7 +68,8 @@ try:
         print("Model validation successful")
 except Exception as e:
     print(f"Model validation failed: {str(e)}")
-    exit(1)'
+    exit(1)
+'
                     """
                 }
             }
