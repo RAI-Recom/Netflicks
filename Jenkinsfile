@@ -56,7 +56,7 @@ pipeline {
         stage('Validate Model') {
             steps {
                 script {
-                    sh '''
+                    sh """
                         # Create temporary container to validate model from volume
                         docker run --rm \
                             -v ${env.MODEL_VOLUME}:/app/models \
@@ -71,7 +71,7 @@ except Exception as e:
     print(f'Model validation failed: {str(e)}')
     exit(1)
 "
-                    '''
+                    """
                 }
             }
         }
