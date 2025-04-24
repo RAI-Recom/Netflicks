@@ -16,17 +16,18 @@ pipeline {
                     env.API_PORT = (env.BRANCH_NAME == 'main') ? '8082' : '9092'
                     env.DOCKER_NAME_RUN = (env.BRANCH_NAME == 'main') ? 'netflicks-run' : 'netflicks-test-run'
                     env.DOCKER_NAME_TRAIN = (env.BRANCH_NAME == 'main') ? 'netflicks-train' : 'netflicks-test-train'
+                    env.MODEL_VOLUME = (env.BRANCH_NAME == 'main') ? 'model_volume' : 'model_volume_test'
 
                     sh """
                         # run cleanup
                         docker stop ${env.DOCKER_NAME_RUN} || true
                         docker rm -f ${env.DOCKER_NAME_TRAIN} || true
                         docker rm -f ${env.DOCKER_NAME_RUN} || true
-                        docker volume rm model_volume || true
+                        docker volume rm ${env.MODEL_VOLUME} || true
                     """
 
                     // Create volume and validate environment
-                    sh 'docker volume create model_volume'
+                    sh 'docker volume create ${env.MODEL_VOLUME}'
                     // Validate environment variables
                 }
             }
@@ -39,7 +40,7 @@ pipeline {
                     sh """
                         docker run --network=host \
                         --name ${env.DOCKER_NAME_TRAIN} \
-                        -v model_volume:/app/models \
+                        -v ${env.MODEL_VOLUME}:/app/models \
                         -e DB_USER=${DB_USER} \
                         -e DB_PASSWORD=${DB_PASSWORD} \
                         -e HOST=${HOST} \
@@ -58,7 +59,7 @@ pipeline {
                     sh '''
                         # Create temporary container to validate model from volume
                         docker run --rm \
-                            -v model_volume:/app/models \
+                            -v ${env.MODEL_VOLUME}:/app/models \
                             python:3.8-slim \
                             python3 -c "
 import pickle
@@ -88,7 +89,7 @@ except Exception as e:
                             --name ${env.DOCKER_NAME_RUN} \
                             --restart unless-stopped \
                             --network host \
-                            -v model_volume:/app/models \
+                            -v ${env.MODEL_VOLUME}:/app/models \
                             -e DB_USER='${DB_USER}' \
                             -e DB_PASSWORD='${DB_PASSWORD}' \
                             -e HOST='${HOST}' \
