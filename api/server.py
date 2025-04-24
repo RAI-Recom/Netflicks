@@ -7,6 +7,10 @@ from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_
 import time
 
 from pipeline.hybrid_recommend import hybrid_recommend
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 app = Flask(__name__)
 
 # Prometheus Metrics
@@ -52,4 +56,4 @@ def metrics():
 
 if __name__ == '__main__':
     logger.add("api.log")
-    app.run(host='0.0.0.0', port=8082, debug=True)
+    app.run(host='0.0.0.0', port=os.getenv('API_PORT'), debug=True)  
