@@ -4,9 +4,9 @@ sys.path.append('.')
 from flask import Flask, jsonify, Response, request
 from loguru import logger
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
-from pipeline_testing.hybrid_recommend import hybrid_recommend
 import time
 
+from pipeline.hybrid_recommend import hybrid_recommend
 app = Flask(__name__)
 
 # Prometheus Metrics
