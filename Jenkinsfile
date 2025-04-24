@@ -63,13 +63,12 @@ pipeline {
                             python3 -c '
 import pickle
 try:
-    with open('/app/models/popular_movies.pkl', 'rb') as f:
+    with open("/app/models/popular_movies.pkl", "rb") as f:
         model = pickle.load(f)
-        print('Model validation successful')
+        print("Model validation successful")
 except Exception as e:
-    print(f'Model validation failed: {str(e)}')
-    exit(1)
-'
+    print(f"Model validation failed: {str(e)}")
+    exit(1)'
                     """
                 }
             }
