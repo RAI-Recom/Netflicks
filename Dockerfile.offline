@@ -12,4 +12,4 @@ COPY db/ db/
 COPY pipeline/ pipeline/
 COPY evaluation/ evaluation/
 
-CMD ["python", "evaluation/offline_eval_hybrid.py"]
+CMD ["python", "evaluation/offline_eval.py"]
