@@ -36,8 +36,7 @@ pipeline {
         stage('Train Model') {
             steps {
                 script {
-                    // Starting MLflow server to log the model
-                    sh "docker build -f     .train -t ${env.DOCKER_NAME_TRAIN} ."
+                    sh "docker build -f Dockerfile.train -t ${env.DOCKER_NAME_TRAIN} ."
                     sh """
                         docker run --network=host \
                         --name ${env.DOCKER_NAME_TRAIN} \
