@@ -1,0 +1,15 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY requirements.run.txt .
+RUN pip install --no-cache-dir -r requirements.run.txt
+
+VOLUME ["/app/models"]
+
+COPY api/server.py .
+COPY db/ db/
+COPY pipeline/ pipeline/
+COPY evaluation/ evaluation/
+
+CMD ["python", "evaluation/offline_eval_hybrid.py"]
