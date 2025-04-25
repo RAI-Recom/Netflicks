@@ -2,7 +2,11 @@ import pandas as pd
 import pickle
 import os
 from typing import List, Optional
+import mlflow
 
+
+mlflow.set_tracking_uri("http://127.0.0.1:6001")
+mlflow.set_experiment("Netflicks_Models")
 
 class PopularityModel:
     """
@@ -97,8 +101,18 @@ class PopularityModel:
         Returns:
             List of top N popular movie IDs
         """
-        self.compute_popularity_model(movie_df)
-        self.save_model()
+        with mlflow.start_run():
+            self.compute_popularity_model(movie_df)
+            self.save_model()
+
+            mlflow.log_param("top_n", self.top_n)
+
+            # Log metrics
+            mlflow.log_metric("num_popular_movies", len(self.popular_movie_ids))
+
+            # Save the model file as an artifact
+            mlflow.log_artifact(self.model_path, artifact_path="model")
+           
         return self.popular_movie_ids
     
     def get_popular_movies(self, movie_df: Optional[pd.DataFrame] = None) -> pd.DataFrame:
