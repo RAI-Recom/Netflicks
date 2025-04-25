@@ -106,7 +106,7 @@ pipeline {
                         fi
 
                         # Run Prometheus (in background) using custom config
-                        nohup ./prometheus-2.52.0.linux-amd64/prometheus \
+                        nohup ./prometheus \
                         --config.file=./prometheus.yml \
                         --web.listen-address="0.0.0.0:${env.PROMETHEUS_PORT}" \
                         > prometheus.log 2>&1 &
