@@ -108,7 +108,10 @@ pipeline {
                     """
                 }
             }
-            stage ('Run Monitoring Service') {
+        }
+        stage ('Run Monitoring Service') {
+            steps {
+                script {
                   // Stop and remove existing Prometheus container if it exists
                     sh "docker stop prometheus-${env.BRANCH_NAME} || true"
                     sh "docker rm -f prometheus-${env.BRANCH_NAME} || true"
@@ -153,6 +156,7 @@ pipeline {
                             exit 1
                         fi
                     """
+                }
             }
         }
 
