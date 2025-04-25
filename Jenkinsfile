@@ -18,6 +18,7 @@ pipeline {
                     env.DOCKER_NAME_RUN = (env.BRANCH_NAME == 'main') ? 'netflicks-run' : 'netflicks_test-run'
                     env.DOCKER_NAME_TRAIN = (env.BRANCH_NAME == 'main') ? 'netflicks-train' : 'netflicks_test-train'
                     env.MODEL_VOLUME = (env.BRANCH_NAME == 'main') ? 'model_volume' : 'model_volume_test'
+                    sh "echo ${env.BRANCH_NAME}"
 
                     sh """
                         # run cleanup
@@ -105,12 +106,16 @@ pipeline {
                             echo "Service deployment completed. Health check pending."
                         fi
                     """
-                    // Stop and remove existing Prometheus container if it exists
+                }
+            }
+            stage ('Run Monitoring Service') {
+                  // Stop and remove existing Prometheus container if it exists
                     sh "docker stop prometheus-${env.BRANCH_NAME} || true"
                     sh "docker rm -f prometheus-${env.BRANCH_NAME} || true"
+                    sh "printenv branch_name=${env.BRANCH_NAME}"
                     
                     // Create Prometheus config directory if it doesn't exist
-                    sh "mkdir -p /var/jenkins_home/prometheus-configs/${env.BRANCH_NAME}"
+                    sh "mkdir -p ${WORKSPACE}/prometheus-configs/${env.BRANCH_NAME}"
                     
                     // Create a basic prometheus.yml configuration file
                     writeFile file: "/var/jenkins_home/prometheus-configs/${env.BRANCH_NAME}/prometheus.yml", text: """
@@ -148,7 +153,6 @@ pipeline {
                             exit 1
                         fi
                     """
-                }
             }
         }
 
