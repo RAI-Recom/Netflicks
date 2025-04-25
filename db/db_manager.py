@@ -995,3 +995,23 @@ class DBManager:
         except Exception as e:
             self.logger.error(f"Error loading movies: {str(e)}")
             return pd.DataFrame()  # Return an empty DataFrame on error
+
+    def fetch_movie_title_map(self) -> Dict[int, str]:
+        """
+        Fetch a mapping of movie_id to movie_title_id from the database.
+
+        Returns:
+            A dictionary where keys are movie_id and values are movie_title_id.
+        """
+        if not self.conn or self.conn.closed:
+            self.connect()  # Ensure the connection is established
+
+        query = "SELECT movie_id, movie_title_id FROM movies;"
+
+        try:
+            self.cursor.execute(query)
+            rows = self.cursor.fetchall()
+            return dict(rows)  # Convert to dictionary
+        except Exception as e:
+            self.logger.error(f"Error fetching movie title map: {str(e)}")
+            return {}  # Return an empty dictionary on error

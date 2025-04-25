@@ -13,7 +13,7 @@ pipeline {
         stage('Setup') {
             steps {
                 script {
-                    env.API_PORT = (env.BRANCH_NAME == 'main') ? '8082' : '9092'
+                    env.API_PORT = (env.BRANCH_NAME == 'main') ? "${env.PROD_API_PORT}" : "${env.TEST_API_PORT}"
                     env.DOCKER_NAME_RUN = (env.BRANCH_NAME == 'main') ? 'netflicks-run' : 'netflicks_test-run'
                     env.DOCKER_NAME_TRAIN = (env.BRANCH_NAME == 'main') ? 'netflicks-train' : 'netflicks_test-train'
                     env.MODEL_VOLUME = (env.BRANCH_NAME == 'main') ? 'model_volume' : 'model_volume_test'
@@ -93,6 +93,7 @@ pipeline {
                             -e HOST='${HOST}' \
                             -e DB_PORT='${DB_PORT}' \
                             -e DB_NAME='${DB_NAME}' \
+                            -e API_PORT=${env.API_PORT} \
                             ${env.DOCKER_NAME_RUN}
                         
                         # Quick health check

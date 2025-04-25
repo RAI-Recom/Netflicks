@@ -23,6 +23,7 @@ VOLUME ["/app/models"]
 
 # COPY models/ ./models/
 COPY api/server.py .
+COPY db/ db/
 COPY pipeline/ ./pipeline/
 
 CMD ["python", "server.py"]
