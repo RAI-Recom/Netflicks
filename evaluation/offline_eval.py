@@ -68,10 +68,22 @@ def hybrid_predict(user_id, movie_id):
     except:
         return np.nan
 
-test_df["hybrid_score"] = test_df.apply(lambda row: hybrid_predict(row["user_id"], row["movie_id"]), axis=1)
+#test_df["hybrid_score"] = test_df.apply(lambda row: hybrid_predict(row["user_id"], row["movie_id"]), axis=1)
+
+#rmse = np.sqrt(mean_squared_error(test_df["rating"], test_df["hybrid_score"]))
+#print("✅ Hybrid RMSE:", round(rmse, 4))
+
+n_before = len(test_df)
+n_nan = test_df["hybrid_score"].isna().sum()
+print(f"Found {n_nan} missing hybrid_score rows out of {n_before}")
+
+# drop any rows where either true rating or hybrid_score is NaN
+test_df = test_df.dropna(subset=["rating", "hybrid_score"])
+n_after = len(test_df)
+print(f"Dropped {n_before - n_after} rows; now evaluating on {n_after} examples")
 
 rmse = np.sqrt(mean_squared_error(test_df["rating"], test_df["hybrid_score"]))
-print("✅ Hybrid RMSE:", round(rmse, 4))
+print(f"Hybrid RMSE: {rmse:.4f}")
 
 # Compute HitRate@K
 hit_count, total_users = 0, 0
