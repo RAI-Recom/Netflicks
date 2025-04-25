@@ -54,25 +54,23 @@ pipeline {
         }
 
         stage('Offline Evaluation') {
-                steps {
-                    script {
-                        sh '''
-                            WORKSPACE="$(pwd)"
-                            docker run --rm \
-                                -v ${MODEL_VOLUME}:/app/models \
-                                -v "$WORKSPACE/evaluation:/app/evaluation" \
-                                -e DB_USER=${DB_USER} \
-                                -e DB_PASSWORD=${DB_PASSWORD} \
-                                -e DB_HOST=${HOST} \
-                                -e DB_PORT=${DB_PORT} \
-                                -e DB_NAME=${DB_NAME} \
-                                netflicks-run \
-                                python3 /app/evaluation/offline_eval_hybrid.py
-                        '''
-                    }
+            steps {
+                script {
+                    sh """
+                        docker run --rm \
+                            -v ${MODEL_VOLUME}:/app/models \
+                            -v "${WORKSPACE}/evaluation:/app/evaluation" \
+                            -e DB_USER=${DB_USER} \
+                            -e DB_PASSWORD=${DB_PASSWORD} \
+                            -e DB_HOST=${HOST} \
+                            -e DB_PORT=${DB_PORT} \
+                            -e DB_NAME=${DB_NAME} \
+                            netflicks-run \
+                            python3 /app/evaluation/offline_eval.py
+                    """
                 }
             }
-
+}
 
         
 //         stage('Validate Model') {
