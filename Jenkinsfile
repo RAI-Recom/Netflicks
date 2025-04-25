@@ -65,7 +65,7 @@ pipeline {
                             -e DB_PORT=${DB_PORT} \
                             -e DB_NAME=${DB_NAME} \
                             netflicks-run \
-                            python3 /app/evaluation/offline_eval.py
+                            python3 evaluation/offline_eval.py
                     """
                 }
             }
