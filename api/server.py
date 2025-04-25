@@ -56,4 +56,4 @@ def metrics():
 
 if __name__ == '__main__':
     logger.add("api.log")
-    app.run(host='0.0.0.0', port=os.getenv('API_PORT'), debug=True)  
+    app.run(host='0.0.0.0', port=os.getenv('API_PORT', '5000'))

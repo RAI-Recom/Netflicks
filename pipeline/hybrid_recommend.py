@@ -1,9 +1,7 @@
 import pandas as pd
-import numpy as np
 import pickle
 from sklearn.metrics.pairwise import cosine_similarity
-from sqlalchemy import create_engine
-from pipeline.model_pipeline import load_data
+from db.db_manager import DBManager
 
 # Load models
 cf_model = pickle.load(open("models/cf_model.pkl", "rb"))
@@ -11,21 +9,9 @@ user_profiles = pd.read_pickle("models/user_profiles.pkl")
 movie_vectors = pd.read_pickle("models/movie_vectors.pkl")
 top_popular_movies = pickle.load(open("models/popular_movies.pkl", "rb"))
 
-# --- Utility to get SQLAlchemy engine ---
-def get_sqlalchemy_engine():
-    db = load_data.load_config()
-    db_uri = f"postgresql://{db['user']}:{db['password']}@{db['host']}:{db['port']}/{db['dbname']}"
-    return create_engine(db_uri)
-
-# --- Utility to fetch mapping from SQL ---
-def fetch_movie_title_map():
-    engine = get_sqlalchemy_engine()
-    query = "SELECT movie_id, movie_title_id FROM movies;"
-    df = pd.read_sql(query, engine)
-    return dict(zip(df["movie_id"],df["movie_title_id"]))
-
 # --- Fetch once and reuse ---
-movie_id_to_title = fetch_movie_title_map()
+db_manager = DBManager()
+movie_id_to_title = db_manager.fetch_movie_title_map()
 
 def get_weights(user_id):
     try:
