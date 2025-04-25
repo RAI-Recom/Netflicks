@@ -37,20 +37,6 @@ pipeline {
             steps {
                 script {
                     // Starting MLflow server to log the model
-                    sh """
-                        docker run -d \
-                        --network=host \
-                        --name mlflow_server \
-                        -v ${env.MODEL_VOLUME}:/mlruns \
-                        -e MLFLOW_ARTIFACT_ROOT=/mlruns \
-                        ghcr.io/mlflow/mlflow:latest server \
-                            --backend-store-uri sqlite:///mlflow.db \
-                            --default-artifact-root /mlruns \
-                            --host 0.0.0.0 \
-                            --port 6001
-                    """
-
-
                     sh "docker build -f     .train -t ${env.DOCKER_NAME_TRAIN} ."
                     sh """
                         docker run --network=host \
