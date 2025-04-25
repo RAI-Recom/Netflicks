@@ -66,6 +66,7 @@ pipeline {
                             -e DB_HOST=${HOST} \
                             -e DB_PORT=${DB_PORT} \
                             -e DB_NAME=${DB_NAME} \
+                            -e PYTHONPATH=/app \
                             ${env.BRANCH_NAME == 'main' ? 'netflicks-offline-testing' : 'netflicks_test-offline-testing'}
                     """
                 }
