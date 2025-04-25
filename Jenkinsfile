@@ -105,11 +105,14 @@ pipeline {
                             echo "Service deployment completed. Health check pending."
                         fi
 
-                        # Run Prometheus (in background) using custom config
-                        nohup ./prometheus \
-                        --config.file=./prometheus.yml \
-                        --web.listen-address="0.0.0.0:${env.PROMETHEUS_PORT}" \
-                        > prometheus.log 2>&1 &
+                        # Run Prometheus in Docker
+                        docker run -d \
+                        --name prometheus \
+                        --network host \
+                        -v ${env.WORKSPACE}/prometheus.yml:/etc/prometheus/prometheus.yml \
+                        prom/prometheus \
+                        --config.file=/etc/prometheus/prometheus.yml \
+                        --web.listen-address=0.0.0.0:${env.PROMETHEUS_PORT}
                     """
                 }
             }
