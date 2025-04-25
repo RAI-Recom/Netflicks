@@ -109,7 +109,7 @@ pipeline {
                         docker run -d \
                         --name prometheus \
                         --network host \
-                        -v ${env.WORKSPACE}/prometheus.yml:/etc/prometheus/prometheus.yml \
+                        -v /home/jenkins/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml \
                         prom/prometheus \
                         --config.file=/etc/prometheus/prometheus.yml \
                         --web.listen-address=0.0.0.0:${env.PROMETHEUS_PORT}
