@@ -11,13 +11,13 @@ COPY db/ db/
 VOLUME ["/app/models"]
 RUN mkdir -p /app/models
 
-EXPOSE 6001
+# EXPOSE 6001
 
-CMD mlflow server \
-    --backend-store-uri sqlite:///mlflow.db \
-    --default-artifact-root /app/mlruns \
-    --host 0.0.0.0 \
-    --port 6001 & \
-    python pipeline/training_pipeline.py
-    
-# CMD ["python", "pipeline/training_pipeline.py"]
+# CMD mlflow server \
+#     --backend-store-uri sqlite:///mlflow.db \
+#     --default-artifact-root /app/mlruns \
+#     --host 0.0.0.0 \
+#     --port 6001 & \
+#     python pipeline/training_pipeline.py
+
+CMD ["python", "pipeline/training_pipeline.py"]
