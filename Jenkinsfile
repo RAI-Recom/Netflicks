@@ -59,7 +59,6 @@ pipeline {
                     sh """
                         docker run --rm \
                             -v ${MODEL_VOLUME}:/app/models \
-                            -v "${WORKSPACE}/evaluation:/app/evaluation" \
                             -e DB_USER=${DB_USER} \
                             -e DB_PASSWORD=${DB_PASSWORD} \
                             -e DB_HOST=${HOST} \
