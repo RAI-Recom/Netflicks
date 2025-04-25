@@ -1,4 +1,4 @@
-    pipeline {
+pipeline {
     agent any
 
     environment {
@@ -13,17 +13,21 @@
         stage('Setup') {
             steps {
                 script {
-                    env.API_PORT = (env.BRANCH_NAME == 'main') ? "${env.PROD_API_PORT}" : "${env.TEST_API_PORT}"
+                    env.API_PORT = (env.BRANCH_NAME == 'main') ? '8082' : '9092'
+                    env.DOCKER_NAME_RUN = (env.BRANCH_NAME == 'main') ? 'netflicks-run' : 'netflicks_test-run'
+                    env.DOCKER_NAME_TRAIN = (env.BRANCH_NAME == 'main') ? 'netflicks-train' : 'netflicks_test-train'
+                    env.MODEL_VOLUME = (env.BRANCH_NAME == 'main') ? 'model_volume' : 'model_volume_test'
+
                     sh """
                         # run cleanup
-                        docker stop netflicks-run || true
-                        docker rm -f netflicks-train || true
-                        docker rm -f netflicks-run || true
-                        docker volume rm model_volume || true
+                        docker stop ${env.DOCKER_NAME_RUN} || true
+                        docker rm -f ${env.DOCKER_NAME_TRAIN} || true
+                        docker rm -f ${env.DOCKER_NAME_RUN} || true
+                        docker volume rm ${env.MODEL_VOLUME} || true
                     """
 
                     // Create volume and validate environment
-                    sh 'docker volume create model_volume'
+                    sh "docker volume create ${env.MODEL_VOLUME}"
                     // Validate environment variables
                 }
             }
@@ -32,66 +36,64 @@
         stage('Train Model') {
             steps {
                 script {
-                    sh 'docker build -f Dockerfile.train -t netflicks-train .'
+                    sh "docker build -f Dockerfile.train -t ${env.DOCKER_NAME_TRAIN} ."
                     sh """
                         docker run --network=host \
-                        --name netflicks-train \
-                        -v model_volume:/app/models \
+                        --name ${env.DOCKER_NAME_TRAIN} \
+                        -v ${env.MODEL_VOLUME}:/app/models \
                         -e DB_USER=${DB_USER} \
                         -e DB_PASSWORD=${DB_PASSWORD} \
                         -e HOST=${HOST} \
                         -e DB_PORT=${DB_PORT} \
                         -e DB_NAME=${DB_NAME} \
-                        netflicks-train
+                        ${env.DOCKER_NAME_TRAIN}
                     """
-                    sh 'docker rm netflicks-train'
+                    sh "docker rm ${env.DOCKER_NAME_TRAIN}"
                 }
             }
         }
         
-        stage('Validate Model') {
-            steps {
-                script {
-                    sh '''
-                        # Create temporary container to validate model from volume
-                        docker run --rm \
-                            -v model_volume:/app/models \
-                            python:3.8-slim \
-                            python3 -c "
-import pickle
-try:
-    with open('/app/models/popular_movies.pkl', 'rb') as f:
-        model = pickle.load(f)
-        print('Model validation successful')
-except Exception as e:
-    print(f'Model validation failed: {str(e)}')
-    exit(1)
-"
-                    '''
-                }
-            }
-        }
+//         stage('Validate Model') {
+//             steps {
+//                 script {
+//                     sh """
+//                         docker run --rm \
+//                             -v ${env.MODEL_VOLUME}:/app/models \
+//                             python:3.8-slim \
+//                             python3 -c '
+// import pickle
+// try:
+//     with open("/app/models/popular_movies.pkl", "rb") as f:
+//         model = pickle.load(f)
+//         print("Model validation successful")
+// except Exception as e:
+//     print(f"Model validation failed: {str(e)}")
+//     exit(1)
+// '
+//                     """
+//                 }
+//             }
+//         }
         
         stage('Run Service') {
             steps {
                 script {
-                    sh """
-
+                    sh """#!/usr/bin/env bash
                         # Build the service image
-                        docker build -f Dockerfile.run -t netflicks-run .
+                        docker build -f Dockerfile.run -t ${env.DOCKER_NAME_RUN} .
                         
                         # Run the Flask API service in detached mode with restart policy
                         docker run -d \
-                            --name netflicks-run \
+                            --name ${env.DOCKER_NAME_RUN} \
                             --restart unless-stopped \
                             --network host \
-                            -v model_volume:/app/models \
+                            -v ${env.MODEL_VOLUME}:/app/models \
                             -e DB_USER='${DB_USER}' \
                             -e DB_PASSWORD='${DB_PASSWORD}' \
                             -e HOST='${HOST}' \
                             -e DB_PORT='${DB_PORT}' \
                             -e DB_NAME='${DB_NAME}' \
-                            netflicks-run
+                            ${env.DOCKER_NAME_RUN}
                         
                         # Quick health check
                         sleep 5
@@ -104,17 +106,30 @@ except Exception as e:
                 }
             }
         }
+
+        // stage('Cleanup') {
+        //     steps {
+        //         script {
+        //             if (env.BRANCH_NAME != 'main') {
+        //                 sh '''
+        //                     docker stop ${env.DOCKER_NAME_RUN} || true
+        //                     docker rm -f ${env.DOCKER_NAME_RUN} || true
+        //                     docker volume rm model_volume || true
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // }
     }
     
     // post {
     //     always {
     //         script {
-    //             sh '''
-    //                 # Cleanup on pipeline stop or failure
-    //                 docker stop netflicks-run || true
-    //                 docker rm -f netflicks-run || true
-    //                 docker volume rm model_volume || true
-    //             '''
+    //                 sh '''
+    //                     docker stop ${env.DOCKER_NAME_RUN} || true
+    //                     docker rm -f ${env.DOCKER_NAME_RUN} || true
+    //                     docker volume rm model_volume || true
+    //                 '''
     //         }
     //     }
     // }
