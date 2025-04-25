@@ -14,6 +14,7 @@ pipeline {
             steps {
                 script {
                     env.API_PORT = (env.BRANCH_NAME == 'main') ? "${env.PROD_API_PORT}" : "${env.TEST_API_PORT}"
+                    env.PROMETHEUS_PORT = (env.BRANCH_NAME == 'main') ? "${env.PROD_PROMETHEUS_PORT}" : "${env.TEST_PROMETHEUS_PORT}"
                     env.DOCKER_NAME_RUN = (env.BRANCH_NAME == 'main') ? 'netflicks-run' : 'netflicks_test-run'
                     env.DOCKER_NAME_TRAIN = (env.BRANCH_NAME == 'main') ? 'netflicks-train' : 'netflicks_test-train'
                     env.MODEL_VOLUME = (env.BRANCH_NAME == 'main') ? 'model_volume' : 'model_volume_test'
@@ -103,6 +104,12 @@ pipeline {
                         else
                             echo "Service deployment completed. Health check pending."
                         fi
+
+                        # Run Prometheus (in background) using custom config
+                        nohup ./prometheus \
+                        --config.file=./prometheus.yml \
+                        --web.listen-address="0.0.0.0:${env.PROMETHEUS_PORT}" \
+                        > prometheus.log 2>&1 &
                     """
                 }
             }
