@@ -106,17 +106,30 @@ pipeline {
                 }
             }
         }
+
+        // stage('Cleanup') {
+        //     steps {
+        //         script {
+        //             if (env.BRANCH_NAME != 'main') {
+        //                 sh '''
+        //                     docker stop ${env.DOCKER_NAME_RUN} || true
+        //                     docker rm -f ${env.DOCKER_NAME_RUN} || true
+        //                     docker volume rm model_volume || true
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // }
     }
     
     // post {
     //     always {
     //         script {
-    //             sh '''
-    //                 # Cleanup on pipeline stop or failure
-    //                 docker stop ${env.DOCKER_NAME_RUN} || true
-    //                 docker rm -f ${env.DOCKER_NAME_RUN} || true
-    //                 docker volume rm model_volume || true
-    //             '''
+    //                 sh '''
+    //                     docker stop ${env.DOCKER_NAME_RUN} || true
+    //                     docker rm -f ${env.DOCKER_NAME_RUN} || true
+    //                     docker volume rm model_volume || true
+    //                 '''
     //         }
     //     }
     // }
