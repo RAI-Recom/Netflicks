@@ -53,25 +53,26 @@ pipeline {
             }
         }
 
-        stage('Offline Evaluation') {
+         stage('Offline Evaluation') {
             steps {
                 script {
-                    sh """
-                        docker build -f Dockerfile.offline -t ${env.BRANCH_NAME == 'main' ? 'netflicks-offline-testing' : 'netflicks_test-offline-testing'} .
-                        
-                        docker run --rm \
-                            -v ${env.MODEL_VOLUME}:/app/models \
-                            -e DB_USER=${DB_USER} \
-                            -e DB_PASSWORD=${DB_PASSWORD} \
-                            -e DB_HOST=${HOST} \
-                            -e DB_PORT=${DB_PORT} \
-                            -e DB_NAME=${DB_NAME} \
-                            -e PYTHONPATH=/app \
-                            ${env.BRANCH_NAME == 'main' ? 'netflicks-offline-testing' : 'netflicks_test-offline-testing'}
-                    """
+                
+                sh """
+                    docker run --rm \
+                        --network=host \
+                        -v ${env.MODEL_VOLUME}:/app/models \
+                        -e DB_USER=${DB_USER} \
+                        -e DB_PASSWORD=${DB_PASSWORD} \
+                        -e HOST=${HOST} \
+                        -e DB_PORT=${DB_PORT} \
+                        -e DB_NAME=${DB_NAME} \
+                        -e PYTHONPATH=/app \
+                        netflicks_test-offline-testing
+                """
                 }
             }
         }
+
 
         
 //         stage('Validate Model') {
