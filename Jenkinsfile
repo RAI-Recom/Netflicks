@@ -93,7 +93,7 @@ pipeline {
                             -e HOST='${HOST}' \
                             -e DB_PORT='${DB_PORT}' \
                             -e DB_NAME='${DB_NAME}' \
-                            -e API_PORT=${env.API_PORT}
+                            -e API_PORT=${env.API_PORT} \
                             ${env.DOCKER_NAME_RUN}
                         
                         # Quick health check
