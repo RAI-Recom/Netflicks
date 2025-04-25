@@ -104,15 +104,49 @@ pipeline {
                         else
                             echo "Service deployment completed. Health check pending."
                         fi
+                    """
+                    // Stop and remove existing Prometheus container if it exists
+                    sh "docker stop prometheus-${env.BRANCH_NAME} || true"
+                    sh "docker rm -f prometheus-${env.BRANCH_NAME} || true"
+                    
+                    // Create Prometheus config directory if it doesn't exist
+                    sh "mkdir -p /var/jenkins_home/prometheus-configs/${env.BRANCH_NAME}"
+                    
+                    // Create a basic prometheus.yml configuration file
+                    writeFile file: "/var/jenkins_home/prometheus-configs/${env.BRANCH_NAME}/prometheus.yml", text: """
+                        global:
+                        scrape_interval: 15s
+                        evaluation_interval: 15s
 
-                        # Run Prometheus in Docker
+                        scrape_configs:
+                        - job_name: 'netflicks'
+                            static_configs:
+                            - targets: ['localhost:${env.API_PORT}']
+                        """
+                    
+                    // Run Prometheus with proper container naming and volume mounting
+                    sh """
                         docker run -d \
-                        --name prometheus \
-                        --network host \
-                        -v /home/jenkins/prometheus/:/etc/prometheus/ \
+                        --name prometheus-${env.BRANCH_NAME} \
+                        -p ${env.PROMETHEUS_PORT}:9090 \
+                        -v /var/jenkins_home/prometheus-configs/${env.BRANCH_NAME}:/etc/prometheus \
+                        --restart unless-stopped \
                         prom/prometheus \
                         --config.file=/etc/prometheus/prometheus.yml \
-                        --web.listen-address=0.0.0.0:${env.PROMETHEUS_PORT}
+                        --storage.tsdb.path=/prometheus \
+                        --web.console.libraries=/usr/share/prometheus/console_libraries \
+                        --web.console.templates=/usr/share/prometheus/consoles
+                    """
+                    
+                    // Verify Prometheus is running
+                    sh """
+                        sleep 5
+                        if curl -s http://localhost:${env.PROMETHEUS_PORT}/-/healthy > /dev/null; then
+                            echo "Prometheus deployed successfully"
+                        else
+                            echo "Prometheus deployment failed"
+                            exit 1
+                        fi
                     """
                 }
             }
