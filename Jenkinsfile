@@ -115,7 +115,7 @@ pipeline {
                   // Stop and remove existing Prometheus container if it exists
                     sh "docker stop prometheus-${env.BRANCH_NAME} || true"
                     sh "docker rm -f prometheus-${env.BRANCH_NAME} || true"
-                    sh "printenv branch_name=${env.BRANCH_NAME}"
+                    sh "printenv"
                     
                     // Create Prometheus config directory if it doesn't exist
                     sh "mkdir -p ${WORKSPACE}/prometheus-configs/${env.BRANCH_NAME}"
