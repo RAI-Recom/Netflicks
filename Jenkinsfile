@@ -42,14 +42,14 @@ pipeline {
                         --network=host \
                         --name mlflow_server \
                         -v ${env.MODEL_VOLUME}:/mlruns \
-                        -p 6001:6001 \
                         -e MLFLOW_ARTIFACT_ROOT=/mlruns \
-                        mlflow/mlflow:latest server \
+                        ghcr.io/mlflow/mlflow:latest server \
                             --backend-store-uri sqlite:///mlflow.db \
                             --default-artifact-root /mlruns \
                             --host 0.0.0.0 \
                             --port 6001
                     """
+
 
                     sh "docker build -f     .train -t ${env.DOCKER_NAME_TRAIN} ."
                     sh """
