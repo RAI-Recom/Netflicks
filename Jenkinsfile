@@ -127,7 +127,8 @@ pipeline {
                         scrape_configs:
                             - job_name: 'netflicks'
                             static_configs:
-                                - targets: ['localhost:${env.API_PORT}']
+                                - targets:
+                                    -'localhost:${env.API_PORT}'
                         """
 
                     sh "chmod 644 /var/tmp/prometheus-configs/development/prometheus.yml"
