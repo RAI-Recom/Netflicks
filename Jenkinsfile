@@ -135,9 +135,9 @@ pipeline {
                     // Run Prometheus with proper container naming and volume mounting
                     sh """
                         docker run -d \
-                        --name prometheus-${env.BRANCH_NAME} \
+                        --name prometheus-development \
                         -p ${env.PROMETHEUS_PORT}:9090 \
-                        -v /var/jenkins_home/prometheus-configs/${env.BRANCH_NAME}:/etc/prometheus \
+                        -v /var/jenkins_home/prometheus-configs/development:/etc/prometheus \
                         --restart unless-stopped \
                         prom/prometheus \
                         --config.file=/etc/prometheus/prometheus.yml \
