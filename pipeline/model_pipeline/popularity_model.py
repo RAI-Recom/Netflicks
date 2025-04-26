@@ -108,7 +108,7 @@ class PopularityModel:
             mlflow.log_param("top_n", self.top_n)
 
             # Log metrics
-            mlflow.log_metric("popular_movies", self.popular_movie_ids)
+            mlflow.log_metric("num_popular_movies", len(self.popular_movie_ids))
 
             # Save the model file as an artifact
             mlflow.log_artifact(self.model_path, artifact_path="model")
