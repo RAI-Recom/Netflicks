@@ -14,17 +14,17 @@ RUN mkdir -p /app/models
 # ENV MLFLOW_TRACKING_URI=file:/app/mlruns
 # ENV MLFLOW_TRACKING_URI=http://127.0.0.1:6001
 
-EXPOSE 6001
+# EXPOSE 6001
 
 # COPY entrypoint.sh .
 
 # ENTRYPOINT ["bash", "entrypoint.sh"]
 
-CMD mlflow server \
-    --backend-store-uri sqlite:///mlflow.db \
-    --default-artifact-root /app/mlruns \
-    --host 0.0.0.0 \
-    --port 6001 & \
-    python pipeline/training_pipeline.py
+# CMD mlflow server \
+#     --backend-store-uri sqlite:///mlflow.db \
+#     --default-artifact-root /app/mlruns \
+#     --host 0.0.0.0 \
+#     --port 6001 & \
+#     python pipeline/training_pipeline.py
 
-# CMD ["python", "pipeline/training_pipeline.py"]
+CMD ["python", "pipeline/training_pipeline.py"]
