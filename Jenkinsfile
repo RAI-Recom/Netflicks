@@ -137,7 +137,7 @@ pipeline {
                         docker run -d \
                         --name prometheus-development \
                         -p ${env.PROMETHEUS_PORT}:9090 \
-                        -v ${WORKSPACE}/prometheus-configs/development:/etc/prometheus \
+                        -v "${WORKSPACE}/prometheus-configs/development":/etc/prometheus \
                         --restart unless-stopped \
                         prom/prometheus \
                         --config.file=/etc/prometheus/prometheus.yml \
