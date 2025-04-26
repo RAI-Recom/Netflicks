@@ -118,10 +118,10 @@ pipeline {
                     sh "printenv"
                     
                     // Create Prometheus config directory if it doesn't exist
-                    sh "mkdir -p ${WORKSPACE}/prometheus-configs/development"
+                    sh "mkdir -p tmp/prometheus-configs/development"
                     
                     // Create a basic prometheus.yml configuration file
-                    writeFile file: "${WORKSPACE}/prometheus-configs/development/prometheus.yml", text: """
+                    writeFile file: "/tmp/prometheus-configs/development/prometheus.yml", text: """
                         global:
                         scrape_interval: 15s
                         evaluation_interval: 15s
@@ -137,7 +137,7 @@ pipeline {
                         docker run -d \
                         --name prometheus-development \
                         -p ${env.PROMETHEUS_PORT}:9090 \
-                        -v "${WORKSPACE}/prometheus-configs/development":/etc/prometheus \
+                        -v /tmp/prometheus-configs/development:/etc/prometheus \
                         --restart unless-stopped \
                         prom/prometheus \
                         --config.file=/etc/prometheus/prometheus.yml \
