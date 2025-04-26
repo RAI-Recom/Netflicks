@@ -113,15 +113,15 @@ pipeline {
             steps {
                 script {
                   // Stop and remove existing Prometheus container if it exists
-                    sh "docker stop prometheus-${env.BRANCH_NAME} || true"
-                    sh "docker rm -f prometheus-${env.BRANCH_NAME} || true"
+                    sh "docker stop prometheus-development || true"
+                    sh "docker rm -f prometheus-development || true"
                     sh "printenv"
                     
                     // Create Prometheus config directory if it doesn't exist
-                    sh "mkdir -p ${WORKSPACE}/prometheus-configs/${env.BRANCH_NAME}"
+                    sh "mkdir -p ${WORKSPACE}/prometheus-configs/development"
                     
                     // Create a basic prometheus.yml configuration file
-                    writeFile file: "/var/jenkins_home/prometheus-configs/${env.BRANCH_NAME}/prometheus.yml", text: """
+                    writeFile file: "/var/jenkins_home/prometheus-configs/development/prometheus.yml", text: """
                         global:
                         scrape_interval: 15s
                         evaluation_interval: 15s
