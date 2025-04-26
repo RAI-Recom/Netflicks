@@ -121,7 +121,7 @@ pipeline {
                     sh "mkdir -p ${WORKSPACE}/prometheus-configs/development"
                     
                     // Create a basic prometheus.yml configuration file
-                    writeFile file: "/var/jenkins_home/prometheus-configs/development/prometheus.yml", text: """
+                    writeFile file: "${WORKSPACE}/prometheus-configs/development/prometheus.yml", text: """
                         global:
                         scrape_interval: 15s
                         evaluation_interval: 15s
@@ -137,7 +137,7 @@ pipeline {
                         docker run -d \
                         --name prometheus-development \
                         -p ${env.PROMETHEUS_PORT}:9090 \
-                        -v /var/jenkins_home/prometheus-configs/development:/etc/prometheus \
+                        -v ${WORKSPACE}/prometheus-configs/development:/etc/prometheus \
                         --restart unless-stopped \
                         prom/prometheus \
                         --config.file=/etc/prometheus/prometheus.yml \
