@@ -116,10 +116,10 @@ pipeline {
                     sh "docker stop prometheus-development || true"
                     sh "docker rm -f prometheus-development || true"
                     
-                    // Create directory and write config file to the SAME location you're mounting
+                    // Create directory to hold full Prometheus config structure
                     sh "mkdir -p /tmp/prometheus-configs/development"
-                    
-                    // Write the config file to the correct location
+
+                    // Write your custom prometheus.yml to that directory
                     writeFile file: "/tmp/prometheus-configs/development/prometheus.yml", text: """
                         global:
                         scrape_interval: 15s
@@ -130,40 +130,41 @@ pipeline {
                             static_configs:
                             - targets: ['localhost:${env.API_PORT}']
                         """
-                    
-                    // Verify the file exists
+
+                    // List contents to verify
                     sh "ls -la /tmp/prometheus-configs/development/"
-                    
-                    // Run Prometheus with the correct volume mount
+
+                    // Run Prometheus with the WHOLE folder mounted (correct!)
                     sh """
-                        docker run -d \\
-                        --name prometheus-development \\
-                        -p ${env.PROMETHEUS_PORT}:9090 \\
-                        -v /tmp/prometheus-configs/development/prometheus.yml:/etc/prometheus/prometheus.yml \\
-                        --restart unless-stopped \\
-                        prom/prometheus \\
-                        --config.file=/etc/prometheus/prometheus.yml \\
-                        --storage.tsdb.path=/prometheus \\
-                        --web.console.libraries=/usr/share/prometheus/console_libraries \\
+                    docker run -d \
+                        --name prometheus-development \
+                        -p ${env.PROMETHEUS_PORT}:9090 \
+                        -v /tmp/prometheus-configs/development:/etc/prometheus \
+                        --restart unless-stopped \
+                        prom/prometheus \
+                        --config.file=/etc/prometheus/prometheus.yml \
+                        --storage.tsdb.path=/prometheus \
+                        --web.console.libraries=/usr/share/prometheus/console_libraries \
                         --web.console.templates=/usr/share/prometheus/consoles
                     """
-                    
+
                     // Wait and check logs
                     sh "sleep 15"
                     sh "docker logs prometheus-development || true"
-                    
+
                     // Health check
                     sh """
-                        if curl -s http://localhost:${env.PROMETHEUS_PORT}/-/healthy; then
-                            echo "Prometheus deployed successfully"
-                        else
-                            echo "Prometheus deployment failed"
-                            exit 1
-                        fi
+                    if curl -s http://localhost:${env.PROMETHEUS_PORT}/-/healthy; then
+                        echo "Prometheus deployed successfully"
+                    else
+                        echo "Prometheus deployment failed"
+                        exit 1
+                    fi
                     """
                 }
             }
         }
+
 
         // stage('Cleanup') {
         //     steps {
