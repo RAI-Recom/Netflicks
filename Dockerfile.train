@@ -11,6 +11,8 @@ COPY db/ db/
 VOLUME ["/app/models"]
 RUN mkdir -p /app/models
 
+ENV MLFLOW_TRACKING_URI=file:/app/mlruns
+
 EXPOSE 6001
 
 COPY entrypoint.sh .
