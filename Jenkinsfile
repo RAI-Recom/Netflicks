@@ -36,12 +36,10 @@ pipeline {
         stage('Train Model') {
             steps {
                 script {
-                    sh "mlflow ui --port 6001"
                     sh "docker build -f Dockerfile.train -t ${env.DOCKER_NAME_TRAIN} ."
                     sh """
                         docker run --network=host \
                         --name ${env.DOCKER_NAME_TRAIN} \
-                        --network host \
                         -v ${env.MODEL_VOLUME}:/app/models \
                         -e DB_USER=${DB_USER} \
                         -e DB_PASSWORD=${DB_PASSWORD} \
@@ -106,6 +104,7 @@ pipeline {
                             echo "Service deployment completed. Health check pending."
                         fi
                     """
+                    sh "mlflow ui --port 6001"
                 }
             }
         }
