@@ -136,10 +136,10 @@ pipeline {
 
                     // Run Prometheus with the WHOLE folder mounted (correct!)
                     sh """
-                    docker run -d \
+                        docker run -d \
                         --name prometheus-development \
                         -p ${env.PROMETHEUS_PORT}:9090 \
-                        -v /tmp/prometheus-configs/development:/etc/prometheus \
+                        -v /tmp/prometheus-configs/development/prometheus.yml:/etc/prometheus/prometheus.yml \
                         --restart unless-stopped \
                         prom/prometheus \
                         --config.file=/etc/prometheus/prometheus.yml \
