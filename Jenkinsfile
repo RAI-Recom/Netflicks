@@ -77,7 +77,7 @@ pipeline {
 //             }
 //         }
         
-        stage('Run Service') {
+        stage('Run Recommendation Service') {
             steps {
                 script {
                     sh """#!/usr/bin/env bash
