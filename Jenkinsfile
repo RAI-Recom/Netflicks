@@ -35,16 +35,12 @@ pipeline {
         
         stage('Train Model') {
             steps {
-                script {
-                    sh """
-                        mlflow ui --port 6001
-                        """
+                script {  
                     sh "docker build -f Dockerfile.train -t ${env.DOCKER_NAME_TRAIN} ."
                     sh """
                         docker run --network=host \
                         --name ${env.DOCKER_NAME_TRAIN} \
                         -v ${env.MODEL_VOLUME}:/app/models \
-                        -v /home/jenkins/mlruns:/app/mlruns \
                         -e DB_USER=${DB_USER} \
                         -e DB_PASSWORD=${DB_PASSWORD} \
                         -e HOST=${HOST} \
