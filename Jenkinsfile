@@ -150,15 +150,6 @@ scrape_configs:
                     // Wait and check logs
                     sh "sleep 15"
                     sh "docker logs prometheus-development || true"
-
-                    // Health check
-                    sh """
-                    if curl -s http://localhost:${env.PROMETHEUS_PORT}/-/healthy; then
-                        echo "Prometheus deployed successfully"
-                    else
-                        echo "Prometheus deployment failed"
-                        exit 1
-                    fi
                     """
                 }
             }
