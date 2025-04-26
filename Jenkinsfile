@@ -56,7 +56,9 @@ pipeline {
          stage('Offline Evaluation') {
             steps {
                 script {
-                
+                // Build the offline-evaluation image
+                sh "docker build -f Dockerfile.offline -t netflicks_test-offline-testing ."
+
                 sh """
                     docker run --rm \
                         --network=host \
