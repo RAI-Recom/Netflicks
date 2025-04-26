@@ -130,6 +130,8 @@ pipeline {
                             - targets: ['localhost:${env.API_PORT}']
                         """
 
+                    sh "chmod 644 /var/tmp/prometheus-configs/development/prometheus.yml"
+
                     sh """
                         docker run -d \
                         --name prometheus-development \
