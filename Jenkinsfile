@@ -148,7 +148,8 @@ pipeline {
                     
                     // Verify Prometheus is running
                     sh """
-                        sleep 5
+                        sleep 15
+                        docker logs prometheus-development || true
                         if curl -s http://localhost:${env.PROMETHEUS_PORT}/-/healthy > /dev/null; then
                             echo "Prometheus deployed successfully"
                         else
