@@ -42,6 +42,7 @@ pipeline {
                         --name ${env.DOCKER_NAME_TRAIN} \
                         -v ${env.MODEL_VOLUME}:/app/models \
                         -p 6001:6001 \
+                        -v /home/jenkins/mlruns:/app/mlruns \
                         -e DB_USER=${DB_USER} \
                         -e DB_PASSWORD=${DB_PASSWORD} \
                         -e HOST=${HOST} \
