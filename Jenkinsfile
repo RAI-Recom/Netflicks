@@ -35,7 +35,7 @@ pipeline {
         
         stage('Train Model') {
             steps {
-                script {  
+                script {
                     sh "docker build -f Dockerfile.train -t ${env.DOCKER_NAME_TRAIN} ."
                     sh """
                         docker run --network=host \
