@@ -12,7 +12,7 @@ VOLUME ["/app/models"]
 RUN mkdir -p /app/models
 
 # ENV MLFLOW_TRACKING_URI=file:/app/mlruns
-ENV MLFLOW_TRACKING_URI=http://0.0.0.0:6001
+ENV MLFLOW_TRACKING_URI=http://127.0.0.1:6001
 
 EXPOSE 6001
 
