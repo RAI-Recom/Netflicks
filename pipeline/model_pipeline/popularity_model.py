@@ -5,7 +5,7 @@ from typing import List, Optional
 import mlflow
 
 
-mlflow.set_tracking_uri("http://127.0.0.1:6001")
+mlflow.set_tracking_uri("http://0.0.0.0:6001")
 mlflow.set_experiment("Netflicks_Models")
 
 class PopularityModel:

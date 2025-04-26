@@ -16,9 +16,9 @@ RUN mkdir -p /app/models
 
 EXPOSE 6001
 
-# COPY entrypoint.sh .
+COPY entrypoint.sh .
 
-# ENTRYPOINT ["bash", "entrypoint.sh"]
+ENTRYPOINT ["bash", "entrypoint.sh"]
 
 # CMD mlflow server \
 #     --backend-store-uri sqlite:///mlflow.db \
@@ -27,4 +27,4 @@ EXPOSE 6001
 #     --port 6001 & \
 #     python pipeline/training_pipeline.py
 
-CMD ["python", "pipeline/training_pipeline.py"]
+# CMD ["python", "pipeline/training_pipeline.py"]
