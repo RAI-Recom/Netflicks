@@ -150,7 +150,6 @@ scrape_configs:
                     // Wait and check logs
                     sh "sleep 15"
                     sh "docker logs prometheus-development || true"
-                    """
                 }
             }
         }
