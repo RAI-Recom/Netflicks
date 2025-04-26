@@ -46,6 +46,7 @@ pipeline {
                         -e HOST=${HOST} \
                         -e DB_PORT=${DB_PORT} \
                         -e DB_NAME=${DB_NAME} \
+                        -p 6001:6001 \
                         ${env.DOCKER_NAME_TRAIN}
                     """
                     sh "docker rm ${env.DOCKER_NAME_TRAIN}"
