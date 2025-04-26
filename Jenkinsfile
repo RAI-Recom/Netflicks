@@ -117,10 +117,9 @@ pipeline {
                     sh "docker rm -f prometheus-development || true"
                     
                     // Create directory to hold full Prometheus config structure
-                    sh "mkdir -p /tmp/prometheus-configs/development"
+                    sh "mkdir -p /var/tmp/prometheus-configs/development"
 
-                    // Write your custom prometheus.yml to that directory
-                    writeFile file: "/tmp/prometheus-configs/development/prometheus.yml", text: """
+                        writeFile file: "/var/tmp/prometheus-configs/development/prometheus.yml", text: """
                         global:
                         scrape_interval: 15s
                         evaluation_interval: 15s
@@ -131,15 +130,11 @@ pipeline {
                             - targets: ['localhost:${env.API_PORT}']
                         """
 
-                    // List contents to verify
-                    sh "ls -la /tmp/prometheus-configs/development/"
-
-                    // Run Prometheus with the WHOLE folder mounted (correct!)
                     sh """
                         docker run -d \
                         --name prometheus-development \
                         -p ${env.PROMETHEUS_PORT}:9090 \
-                        -v /tmp/prometheus-configs/development/prometheus.yml:/etc/prometheus/prometheus.yml \
+                        -v /var/tmp/prometheus-configs/development/prometheus.yml:/etc/prometheus/prometheus.yml \
                         --restart unless-stopped \
                         prom/prometheus \
                         --config.file=/etc/prometheus/prometheus.yml \
