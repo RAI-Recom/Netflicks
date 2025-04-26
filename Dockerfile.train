@@ -11,7 +11,8 @@ COPY db/ db/
 VOLUME ["/app/models"]
 RUN mkdir -p /app/models
 
-ENV MLFLOW_TRACKING_URI=file:/app/mlruns
+# ENV MLFLOW_TRACKING_URI=file:/app/mlruns
+ENV MLFLOW_TRACKING_URI=http://host.docker.internal:6001
 
 EXPOSE 6001
 
