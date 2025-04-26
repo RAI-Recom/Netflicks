@@ -40,8 +40,8 @@ pipeline {
                     sh """
                         docker run --network=host \
                         --name ${env.DOCKER_NAME_TRAIN} \
+                        -network host \
                         -v ${env.MODEL_VOLUME}:/app/models \
-                        --network host \
                         -e DB_USER=${DB_USER} \
                         -e DB_PASSWORD=${DB_PASSWORD} \
                         -e HOST=${HOST} \
