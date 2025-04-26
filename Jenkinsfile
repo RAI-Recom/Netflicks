@@ -36,6 +36,9 @@ pipeline {
         stage('Train Model') {
             steps {
                 script {
+                    sh """
+                        nohup mlflow ui --backend-store-uri /home/jenkins/mlruns --host 0.0.0.0 --port 6001 &
+                        """
                     sh "docker build -f Dockerfile.train -t ${env.DOCKER_NAME_TRAIN} ."
                     sh """
                         docker run --network=host \
