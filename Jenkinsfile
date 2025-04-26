@@ -121,13 +121,13 @@ pipeline {
 
                         writeFile file: "/var/tmp/prometheus-configs/development/prometheus.yml", text: """
                         global:
-                        scrape_interval: 15s
-                        evaluation_interval: 15s
+                            scrape_interval: 15s
+                            evaluation_interval: 15s
 
                         scrape_configs:
-                        - job_name: 'netflicks'
+                            - job_name: 'netflicks'
                             static_configs:
-                            - targets: ['localhost:${env.API_PORT}']
+                                - targets: ['localhost:${env.API_PORT}']
                         """
 
                     sh "chmod 644 /var/tmp/prometheus-configs/development/prometheus.yml"
