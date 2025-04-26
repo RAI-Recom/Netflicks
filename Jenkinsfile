@@ -109,7 +109,7 @@ pipeline {
                 }
             }
         }
-        stage ('Run Monitoring Service') {
+        stage ('Run Prometheus Service') {
             steps {
                 script {
                     // Stop and remove existing container
@@ -153,7 +153,27 @@ scrape_configs:
                 }
             }
         }
+        stage('Run Grafana Service') {
+            steps {
+                script {
+                    sh "docker stop grafana || true"
+                    sh "docker rm -f grafana || true"
 
+                    sh """
+                    docker run -d \
+                    --name grafana \
+                    -p 3000:3000 \
+                    --restart unless-stopped \
+                    -e GF_SECURITY_ADMIN_USER=admin \
+                    -e GF_SECURITY_ADMIN_PASSWORD=admin \
+                    grafana/grafana
+                    """
+
+                    sh "sleep 10"
+                    sh "docker logs grafana || true"
+                }
+            }
+        }
 
         // stage('Cleanup') {
         //     steps {
