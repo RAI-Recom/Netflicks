@@ -2,6 +2,15 @@ from scipy.sparse import csr_matrix
 import pandas as pd
 from db.db_manager import DBManager
 import numpy as np
+import mlflow
+import mlflow.sklearn  # We will use this to log a model-like object
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+MLFLOW_PORT = os.getenv("MLFLOW_PORT")
+mlflow.set_tracking_uri("http://0.0.0.0:"+MLFLOW_PORT)
+mlflow.set_experiment("Netflicks_Models")
 
 class CustomALS:
     def __init__(self, n_components=50, regularization=0.01, learning_rate=0.1):
@@ -192,3 +201,36 @@ class CollaborativeFiltering:
             }
         except Exception as e:
             raise RuntimeError(f"Error getting model info: {str(e)}")
+    
+    def log_model_to_mlflow(self):
+        try:
+       
+            with mlflow.start_run(run_name="CollaborativeFiltering_Model"):
+                # Log parameters
+                mlflow.log_param("n_components", self.n_components)
+                mlflow.log_param("random_state", self.random_state)
+
+                # Log metrics - example: how many users
+                mlflow.log_metric("num_users", self.als.user_factors.shape[0])
+                mlflow.log_metric("num_items", self.als.item_factors.shape[0])
+
+                # Log model artifacts
+                # Save model manually, because it's a custom class
+                model_info = self.get_model_info()
+
+                # Save numpy arrays temporarily
+                os.makedirs("model_artifacts", exist_ok=True)
+                np.save("model_artifacts/user_factors.npy", model_info["user_factors"])
+                np.save("model_artifacts/item_factors.npy", model_info["item_factors"])
+
+                # Log artifacts
+                mlflow.log_artifacts("model_artifacts")
+
+                # Optionally remove temp files
+                import shutil
+                shutil.rmtree("model_artifacts")
+            
+                print("Model logged to MLflow successfully.")
+
+        except Exception as e:
+            raise RuntimeError(f"Error logging model to MLflow: {str(e)}")

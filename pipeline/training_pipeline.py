@@ -155,6 +155,7 @@ class TrainingPipeline:
                 n_components=self.config["n_components"]
             )
             cf_model.train()
+            cf_model.log_model_to_mlflow()
             
             # Get and validate model info
             model_info = cf_model.get_model_info()
