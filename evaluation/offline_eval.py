@@ -144,7 +144,7 @@ n_test = int(n_total * TEST_SIZE_RATIO)
 ratings_df = db_manager.load_ratings_chunk(limit=n_test, offset=n_total - n_test)
 
 # Step 4: Prepare
-ratings_df = ratings_df.dropna(subset=["rating"]).sort_values("timestamp")
+ratings_df = ratings_df.dropna(subset=["rating"])
 
 #test_ratings = ratings_df.iloc[-n_test:]
 
