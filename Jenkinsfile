@@ -15,6 +15,7 @@ pipeline {
                 script {
                     env.API_PORT = (env.BRANCH_NAME == 'main') ? "${env.PROD_API_PORT}" : "${env.TEST_API_PORT}"
                     env.PROMETHEUS_PORT = (env.BRANCH_NAME == 'main') ? "${env.PROD_PROMETHEUS_PORT}" : "${env.TEST_PROMETHEUS_PORT}"
+                    env.MLFLOW_PORT = (env.BRANCH_NAME == 'main') ? "${env.MLFLOW_PROD_PORT}" : "${env.MLFLOW_TEST_PORT}"
                     env.DOCKER_NAME_RUN = (env.BRANCH_NAME == 'main') ? 'netflicks-run' : 'netflicks_test-run'
                     env.DOCKER_NAME_TRAIN = (env.BRANCH_NAME == 'main') ? 'netflicks-train' : 'netflicks_test-train'
                     env.MODEL_VOLUME = (env.BRANCH_NAME == 'main') ? 'model_volume' : 'model_volume_test'
@@ -44,6 +45,7 @@ pipeline {
                         --name ${env.DOCKER_NAME_TRAIN} \
                         -v ${env.MODEL_VOLUME}:/app/models \
                         -e DB_USER=${DB_USER} \
+                        -e MLFLOW_PORT=${MLFLOW_PORT} \
                         -e DB_PASSWORD=${DB_PASSWORD} \
                         -e HOST=${HOST} \
                         -e DB_PORT=${DB_PORT} \

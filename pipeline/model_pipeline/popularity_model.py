@@ -3,9 +3,11 @@ import pickle
 import os
 from typing import List, Optional
 import mlflow
+from dotenv import load_dotenv
 
-
-mlflow.set_tracking_uri("http://0.0.0.0:6001")
+load_dotenv()
+MLFLOW_PORT = os.getenv("MLFLOW_PORT")
+mlflow.set_tracking_uri("http://0.0.0.0:"+MLFLOW_PORT)
 mlflow.set_experiment("Netflicks_Models")
 class PopularityModel:
     """
