@@ -13,7 +13,7 @@ class PopularityModel:
     """
     A class for computing and managing movie popularity models based on Bayesian average ranking.
     """
-    artifact_uri = None
+    Popularity_artifact_uri = None
     def __init__(self, top_n: int = 50, model_path: str = "models/popular_movies.pkl"):
         """
         Initialize the PopularityModel.
@@ -113,8 +113,8 @@ class PopularityModel:
 
             # Save the model file as an artifact
             mlflow.log_artifact(self.model_path, artifact_path="model")
-            PopularityModel.artifact_uri = mlflow.get_artifact_uri(self.model_path)
-            print(f"Model saved to MLflow with artifact URI: {PopularityModel.artifact_uri}")
+            PopularityModel.Popularity_artifact_uri = mlflow.get_artifact_uri(self.model_path)
+            print(f"Model saved to MLflow with artifact URI: {PopularityModel.Popularity_artifact_uri}")
 
         return self.popular_movie_ids
     
