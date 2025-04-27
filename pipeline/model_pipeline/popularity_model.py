@@ -14,7 +14,7 @@ class PopularityModel:
     A class for computing and managing movie popularity models based on Bayesian average ranking.
     """
     
-    def __init__(self, top_n: int = 50, model_path: str = "models/cb_model.pkl"):
+    def __init__(self, top_n: int = 50, model_path: str = "models/popular_movies.pkl"):
         """
         Initialize the PopularityModel.
         
