@@ -7,7 +7,7 @@ import mlflow
 
 mlflow.set_tracking_uri("http://0.0.0.0:6001")
 mlflow.set_experiment("Netflicks_Models")
-run_name = "Popularity_Model"
+run_name = "Popularity_Model_Training"
 class PopularityModel:
     """
     A class for computing and managing movie popularity models based on Bayesian average ranking.
@@ -101,7 +101,7 @@ class PopularityModel:
         Returns:
             List of top N popular movie IDs
         """
-        with mlflow.start_run():
+        with mlflow.start_run(run_name=run_name):
             self.compute_popularity_model(movie_df)
             self.save_model()
 
