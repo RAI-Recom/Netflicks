@@ -123,7 +123,7 @@ class ContentBasedFiltering:
                     offset=offset
                 )
                 
-                if watch_df.empty or offset > 100000:
+                if watch_df.empty or offset > 10000:
                     # logger.info("Finished loading watch history data")
                     break
                     
