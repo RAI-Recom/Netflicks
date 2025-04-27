@@ -1021,3 +1021,32 @@ class DBManager:
         self.cursor.execute(query)
         result = self.cursor.fetchone()
         return result[0]
+    
+    def load_watch_for_users(self, user_ids: List[int]) -> pd.DataFrame:
+    if not self.conn or self.conn.closed:
+        self.connect()
+
+    # Break into chunks if user_ids are too many (safe SQL size)
+    chunk_size = 1000
+    chunks = [user_ids[i:i+chunk_size] for i in range(0, len(user_ids), chunk_size)]
+    results = []
+
+    for chunk in chunks:
+        ids_str = ",".join(map(str, chunk))
+        query = f"""
+            SELECT w.user_id, w.movie_id, w.watched_minutes, m.title, m.genres
+            FROM watch_history w
+            JOIN movies m ON w.movie_id = m.movie_id
+            WHERE w.user_id IN ({ids_str})
+            AND m.genres IS NOT NULL
+            ORDER BY w.updated_at DESC
+        """
+        self.cursor.execute(query)
+        rows = self.cursor.fetchall()
+        results.append(pd.DataFrame(rows, columns=["user_id", "movie_id", "watched_minutes", "title", "genres"]))
+
+    if results:
+        return pd.concat(results, ignore_index=True)
+    else:
+        return pd.DataFrame(columns=["user_id", "movie_id", "watched_minutes", "title", "genres"])
+

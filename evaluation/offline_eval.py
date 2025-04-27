@@ -111,7 +111,8 @@ ratings_df = db_manager.load_ratings_chunk(limit=n_test, offset=n_total - n_test
 
 # Step 4: Prepare
 ratings_df = ratings_df.dropna(subset=["rating"])
-watch_df = db_manager.load_watch_chunk(limit=4000000)
+test_user_ids = ratings_df['user_id'].unique().tolist()
+watch_df = db_manager.load_watch_for_users(test_user_ids)
 
 merged_df = pd.merge(
     ratings_df,
