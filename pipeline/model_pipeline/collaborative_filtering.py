@@ -222,7 +222,7 @@ class CollaborativeFiltering:
                 # np.save("model_artifacts/item_factors.npy", model_info["item_factors"])
 
                 # Log artifacts
-                mlflow.log_artifacts("models/cf_model.pkl", artifact_path="model")
+                # mlflow.log_artifacts("models/cf_model.pkl", artifact_path="model")
             
                 print("Model logged to MLflow successfully.")
 
