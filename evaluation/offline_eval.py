@@ -111,7 +111,7 @@ ratings_df = db_manager.load_ratings_chunk(limit=n_test, offset=n_total - n_test
 
 # Step 4: Prepare
 ratings_df = ratings_df.dropna(subset=["rating"])
-watch_df = db_manager.load_watch_chunk(limit=50000)
+watch_df = db_manager.load_watch_chunk(limit=4000000)
 
 merged_df = pd.merge(
     ratings_df,
@@ -129,7 +129,7 @@ total_users = 0
 
 # Group test ratings by user
 #user_groups = ratings_df.groupby('user_id')
-WATCH_TIME_THRESHOLD = 10  # minutes
+WATCH_TIME_THRESHOLD = 5  # minutes
 
 user_groups = merged_df.groupby('user_id')
 
