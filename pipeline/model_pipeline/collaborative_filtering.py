@@ -138,7 +138,7 @@ class CollaborativeFiltering:
                 try:
                     # Load ratings chunk
                     ratings_df = self.db_manager.load_ratings_chunk(limit=limit, offset=offset)
-                    if ratings_df.empty:
+                    if ratings_df.empty or offset > 150000:
                         break  # Exit loop if no more data
                     
                     # Clean and prepare data
