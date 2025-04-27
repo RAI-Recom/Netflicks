@@ -224,11 +224,7 @@ class CollaborativeFiltering:
                 np.save("model_artifacts/item_factors.npy", model_info["item_factors"])
 
                 # Log artifacts
-                # mlflow.log_artifacts("model_artifacts")
-                mlflow.log_artifact(self, artifact_path="model")
-                # Optionally remove temp files
-                import shutil
-                shutil.rmtree("model_artifacts")
+                mlflow.log_artifacts("model_artifacts")
             
                 print("Model logged to MLflow successfully.")
 
