@@ -163,7 +163,7 @@ class TrainingPipeline:
                 
             # Save model
             self.save_model(model_info, self.config["model_paths"]["cf_model"])
-            cf_model.log_model_to_mlflow()
+            cf_model.log_model_to_mlflow(self)
             logger.info("Collaborative filtering model training complete")
             return self
             
