@@ -167,7 +167,7 @@ class CollaborativeFiltering:
 
                     # Update offset for the next batch
                     offset += limit
-                    print(f"Processed batch {offset}")
+                    # print(f"Processed batch {offset}")
 
                 except Exception as e:
                     print(f"Warning: Error processing batch at offset {offset}: {str(e)}")

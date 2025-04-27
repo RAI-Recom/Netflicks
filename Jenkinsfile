@@ -17,6 +17,7 @@ pipeline {
                     env.PROMETHEUS_PORT = (env.BRANCH_NAME == 'main') ? "${env.PROD_PROMETHEUS_PORT}" : "${env.TEST_PROMETHEUS_PORT}"
                     env.DOCKER_NAME_RUN = (env.BRANCH_NAME == 'main') ? 'netflicks-run' : 'netflicks_test-run'
                     env.DOCKER_NAME_TRAIN = (env.BRANCH_NAME == 'main') ? 'netflicks-train' : 'netflicks_test-train'
+                    env.DOCKER_NAME_VALIDATE = (env.BRANCH_NAME == 'main') ? 'netflicks-validate' : 'netflicks_test-validate'
                     env.MODEL_VOLUME = (env.BRANCH_NAME == 'main') ? 'model_volume' : 'model_volume_test'
                     sh "echo 'Running on ${env.BRANCH_NAME}'"
 
@@ -25,6 +26,7 @@ pipeline {
                         docker stop ${env.DOCKER_NAME_RUN} || true
                         docker rm -f ${env.DOCKER_NAME_TRAIN} || true
                         docker rm -f ${env.DOCKER_NAME_RUN} || true
+                        docker rm -f ${env.DOCKER_NAME_VALIDATE} || true
                         docker volume rm ${env.MODEL_VOLUME} || true
                     """
 
@@ -54,28 +56,26 @@ pipeline {
                 }
             }
         }
-        
-//         stage('Validate Model') {
-//             steps {
-//                 script {
-//                     sh """
-//                         docker run --rm \
-//                             -v ${env.MODEL_VOLUME}:/app/models \
-//                             python:3.8-slim \
-//                             python3 -c '
-// import pickle
-// try:
-//     with open("/app/models/popular_movies.pkl", "rb") as f:
-//         model = pickle.load(f)
-//         print("Model validation successful")
-// except Exception as e:
-//     print(f"Model validation failed: {str(e)}")
-//     exit(1)
-// '
-//                     """
-//                 }
-//             }
-//         }
+
+        stage('Validate Models') {
+            steps {
+                script {
+                    sh "docker build -f Dockerfile.validate -t ${env.DOCKER_NAME_VALIDATE} ."
+                    sh """
+                        docker run --network=host \
+                        --name ${env.DOCKER_NAME_VALIDATE} \
+                        -v ${env.MODEL_VOLUME}:/app/models \
+                        -e DB_USER=${DB_USER} \
+                        -e DB_PASSWORD=${DB_PASSWORD} \
+                        -e HOST=${HOST} \
+                        -e DB_PORT=${DB_PORT} \
+                        -e DB_NAME=${DB_NAME} \
+                        ${env.DOCKER_NAME_VALIDATE}
+                    """
+                    sh "docker rm ${env.DOCKER_NAME_VALIDATE}"
+                }
+            }
+        }
         
         stage('Run Recommendation Service') {
             steps {
@@ -179,6 +179,7 @@ scrape_configs:
         //     steps {
         //         script {
         //             if (env.BRANCH_NAME != 'main') {
+        //                 sh "sleep 10000"
         //                 sh '''
         //                     docker stop ${env.DOCKER_NAME_RUN} || true
         //                     docker rm -f ${env.DOCKER_NAME_RUN} || true
