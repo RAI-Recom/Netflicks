@@ -838,7 +838,7 @@ class DBManager:
             FROM watch_history w
             JOIN movies m ON w.movie_id = m.movie_id
             WHERE m.genres IS NOT NULL  -- Check if genres is not null
-            ORDER BY w.updated_at
+            ORDER BY w.updated_at DESC
         """
         
         if limit is not None:
