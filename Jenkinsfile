@@ -14,9 +14,11 @@ pipeline {
             steps {
                 script {
                     env.API_PORT = (env.BRANCH_NAME == 'main') ? "${env.PROD_API_PORT}" : "${env.TEST_API_PORT}"
+                    env.PROMETHEUS_PORT = (env.BRANCH_NAME == 'main') ? "${env.PROD_PROMETHEUS_PORT}" : "${env.TEST_PROMETHEUS_PORT}"
                     env.DOCKER_NAME_RUN = (env.BRANCH_NAME == 'main') ? 'netflicks-run' : 'netflicks_test-run'
                     env.DOCKER_NAME_TRAIN = (env.BRANCH_NAME == 'main') ? 'netflicks-train' : 'netflicks_test-train'
                     env.MODEL_VOLUME = (env.BRANCH_NAME == 'main') ? 'model_volume' : 'model_volume_test'
+                    sh "echo ${env.BRANCH_NAME}"
 
                     sh """
                         # run cleanup
@@ -75,7 +77,7 @@ pipeline {
 //             }
 //         }
         
-        stage('Run Service') {
+        stage('Run Recommendation Service') {
             steps {
                 script {
                     sh """#!/usr/bin/env bash
@@ -104,6 +106,71 @@ pipeline {
                             echo "Service deployment completed. Health check pending."
                         fi
                     """
+                }
+            }
+        }
+        stage ('Run Prometheus Service') {
+            steps {
+                script {
+                    // Stop and remove existing container
+                    sh "docker stop prometheus-development || true"
+                    sh "docker rm -f prometheus-development || true"
+                    
+                    // Create directory to hold full Prometheus config structure
+                    sh "mkdir -p /var/tmp/prometheus-configs/development"
+
+                        writeFile file: "/var/tmp/prometheus-configs/development/prometheus.yml", text: """
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'movie_recommendation_service'
+    static_configs:
+      - targets:
+          - 'localhost:${env.API_PORT}'
+"""
+
+
+                    sh "chmod 644 /var/tmp/prometheus-configs/development/prometheus.yml"
+
+                    sh """
+                        docker run -d \
+                        --name prometheus-development \
+                        -p ${env.PROMETHEUS_PORT}:9090 \
+                        -v /var/tmp/prometheus-configs/development/prometheus.yml:/etc/prometheus/prometheus.yml \
+                        --restart unless-stopped \
+                        prom/prometheus \
+                        --config.file=/etc/prometheus/prometheus.yml \
+                        --storage.tsdb.path=/prometheus \
+                        --web.console.libraries=/usr/share/prometheus/console_libraries \
+                        --web.console.templates=/usr/share/prometheus/consoles
+                    """
+
+                    // Wait and check logs
+                    sh "sleep 15"
+                    sh "docker logs prometheus-development || true"
+                }
+            }
+        }
+        stage('Run Grafana Service') {
+            steps {
+                script {
+                    sh "docker stop grafana || true"
+                    sh "docker rm -f grafana || true"
+
+                    sh """
+                    docker run -d \
+                    --name grafana \
+                    -p 3000:3000 \
+                    --restart unless-stopped \
+                    -e GF_SECURITY_ADMIN_USER=admin \
+                    -e GF_SECURITY_ADMIN_PASSWORD=admin \
+                    grafana/grafana
+                    """
+
+                    sh "sleep 10"
+                    sh "docker logs grafana || true"
                 }
             }
         }
