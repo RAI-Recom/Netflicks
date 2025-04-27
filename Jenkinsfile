@@ -132,6 +132,25 @@ pipeline {
             }
         }
 
+        stage('Online Evaluation') {    # <<< NEW STAGE
+            steps {
+                script {
+                    sh """
+                        docker build -f Dockerfile.kafka -t netflicks_test-kafka-listener .
+                        docker run --rm \
+                            --network=host \
+                            -e DB_USER=${DB_USER} \
+                            -e DB_PASSWORD=${DB_PASSWORD} \
+                            -e HOST=${HOST} \
+                            -e DB_PORT=${DB_PORT} \
+                            -e DB_NAME=${DB_NAME} \
+                            -e PYTHONPATH=/app \
+                            netflicks_test-kafka-listener
+                    """
+                }
+            }
+        }
+
         // stage('Cleanup') {
         //     steps {
         //         script {
