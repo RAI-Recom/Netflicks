@@ -139,8 +139,9 @@ class TrainingPipeline:
             self.save_model(cb_model, self.config["model_paths"]["cb_model"])
             
             logger.info("Content-based filtering model training complete")
+            self.content_based_filtering.log_model_to_mlflow()
             return self
-            
+
         except Exception as e:
             logger.error(f"Error training content-based model: {str(e)}")
             raise

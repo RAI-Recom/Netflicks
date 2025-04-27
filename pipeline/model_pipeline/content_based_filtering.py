@@ -5,6 +5,14 @@ from typing import Dict, List, Tuple, Any, Optional
 import re
 from db.db_manager import DBManager
 import logging
+import mlflow
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+MLFLOW_PORT = os.getenv("MLFLOW_PORT")
+mlflow.set_tracking_uri("http://0.0.0.0:"+MLFLOW_PORT)
+mlflow.set_experiment("Netflicks_Models")
 
 # Set up logging
 logging.basicConfig(
@@ -343,3 +351,23 @@ class ContentBasedFiltering:
         except Exception as e:
             logger.error(f"Error getting recommendations: {str(e)}")
             raise RuntimeError(f"Error getting recommendations: {str(e)}")
+        
+    def log_model_to_mlflow(self):
+        try:
+            with mlflow.start_run(run_name="ContentBasedFiltering_Model"):
+                # Log parameters (e.g., batch_size for loading data)
+                mlflow.log_param("batch_size", self.batch_size)
+
+                # Log the number of movies and users (metrics)
+                mlflow.log_metric("num_movies", len(self.movie_vectors))
+                mlflow.log_metric("num_users", len(self.user_profiles))
+
+                # Log model artifacts (the trained model components)
+                model_artifact_path = "models/cb_model.pkl"
+                
+                mlflow.log_artifacts(model_artifact_path, artifact_path="model")
+                
+                print("Model logged to MLflow successfully.")
+
+        except Exception as e:
+            raise RuntimeError(f"Error logging model to MLflow: {str(e)}")
