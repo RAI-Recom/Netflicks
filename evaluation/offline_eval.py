@@ -157,7 +157,15 @@ total_users = 0
 # Group test ratings by user
 user_groups = ratings_df.groupby('user_id')
 
+
 for user_id, group in tqdm(user_groups, desc="Evaluating"):
+    if len(group) < 5:
+        continue  # skip users with too few ratings
+
+    # Also: Skip if user_id not in training user list (optional, stricter)
+    if user_id not in user_profiles.index:
+        continue
+    
     true_movies = group['movie_id'].tolist()
     true_ratings = group['rating'].tolist()
     
