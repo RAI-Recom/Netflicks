@@ -123,22 +123,6 @@ class TrainingPipeline:
             logger.error(f"Error training popularity model: {str(e)}")
             raise
             
-    def build_profiles(self) -> 'TrainingPipeline':
-        """Build and save user and movie profiles."""
-        try:
-            logger.info("Building user and movie profiles...")
-            
-            # Build profiles
-            self.content_based_filtering.build_user_genre_profiles()
-            self.content_based_filtering.build_movie_genre_vectors()
-            
-            logger.info("Profile building complete")
-            return self
-            
-        except Exception as e:
-            logger.error(f"Error building profiles: {str(e)}")
-            raise
-            
     def train_content_based_filtering_model(self) -> 'TrainingPipeline':
         """Train and save content-based model."""
         try:
@@ -148,7 +132,7 @@ class TrainingPipeline:
             cb_model = self.content_based_filtering.train()
             
             # Validate model
-            if not isinstance(cb_model, dict) or "genre_sim" not in cb_model:
+            if not isinstance(cb_model, dict) or "movie_vectors" not in cb_model:
                 raise ValueError("Invalid content-based model format")
                 
             # Save model
@@ -214,9 +198,6 @@ class TrainingPipeline:
             # Train models sequentially
             logger.info("Training popularity model...")
             self.train_popularity_model()
-            
-            logger.info("Building user and movie profiles...")
-            self.build_profiles()
             
             logger.info("Training collaborative filtering model...")
             self.train_collaborative_filtering_model()

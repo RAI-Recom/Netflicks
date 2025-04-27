@@ -4,7 +4,14 @@ import numpy as np
 from typing import Dict, List, Tuple, Any, Optional
 import re
 from db.db_manager import DBManager
+import logging
 
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 class ContentBasedFiltering:
     """
@@ -13,6 +20,7 @@ class ContentBasedFiltering:
     
     def __init__(self, batch_size: int = 10000):
         """Initialize the ContentBasedFiltering model."""
+        logger.info("Initializing ContentBasedFiltering model")
         self.genre_cols = []
         self.genre_matrix = None
         self.sim_matrix = None
@@ -23,6 +31,7 @@ class ContentBasedFiltering:
         self.db_manager = DBManager()
         self.user_profiles = None
         self.movie_vectors = None
+        # logger.info(f"ContentBasedFiltering initialized with batch_size={batch_size}")
         
     def _standardize_genre(self, genre: str) -> str:
         """Standardize genre names by removing special characters and converting to lowercase."""
@@ -102,35 +111,42 @@ class ContentBasedFiltering:
             Tuple of (user profiles DataFrame, list of genre column names)
         """
         try:
+            # logger.info("Starting to build user genre profiles")
             offset = 0
             all_watch_data = []
             
             # Load watch history in batches
             while True:
+                # logger.info(f"Loading watch history batch at offset {offset}")
                 watch_df = self.db_manager.load_watch_chunk(
                     limit=self.batch_size,
                     offset=offset
                 )
                 
                 if watch_df.empty or offset > 10000:
+                    # logger.info("Finished loading watch history data")
                     break
                     
                 # Process genres
+                # logger.info("Processing genres for current batch")
                 watch_df["processed_genres"] = watch_df["genres"].apply(self.process_genres)
                 all_watch_data.append(watch_df)
                 
                 offset += self.batch_size
-                print(f"Processed {offset} watch history records")
+                # logger.info(f"Processed {offset} watch history records")
             
             # Combine all batches
+            # logger.info("Combining all watch history batches")
             watch_df = pd.concat(all_watch_data, ignore_index=True)
             
             # Get all unique genres
+            # logger.info("Extracting unique genres")
             all_genres = set()
             for genres in watch_df["processed_genres"]:
                 all_genres.update(genres)
             
             # Create genre columns
+            # logger.info("Creating genre columns")
             genre_cols = []
             for genre in sorted(all_genres):
                 col = f"genre_{genre}"
@@ -138,12 +154,15 @@ class ContentBasedFiltering:
                 genre_cols.append(col)
             
             # Apply watch weight using sigmoid function
+            # logger.info("Applying watch weights")
             watch_df["watch_weight"] = watch_df["watched_minutes"].apply(self.assign_watch_weight)
             
             # Calculate watch frequency for each user-movie pair
+            # logger.info("Calculating watch frequencies")
             watch_df["watch_frequency"] = watch_df.groupby(["user_id", "movie_id"])["movie_id"].transform("count")
             
             # Weight genre columns by watch weight and frequency
+            # logger.info("Weighting genre columns")
             for col in genre_cols:
                 watch_df[col] = (
                     watch_df[col] * 
@@ -152,19 +171,24 @@ class ContentBasedFiltering:
                 )
             
             # Group by user and sum weighted vectors
+            # logger.info("Creating user profiles")
             self.user_profiles = watch_df.groupby("user_id")[genre_cols].sum()
             
             # Normalize user profiles
+            # logger.info("Normalizing user profiles")
             row_sums = self.user_profiles.sum(axis=1)
             self.user_profiles = self.user_profiles.div(row_sums, axis=0).fillna(0)
             
             # Save profiles
+            # logger.info(f"Saving user profiles to {user_profiles_path}")
             self.user_profiles.to_pickle(user_profiles_path)
             self.genre_cols = genre_cols
             
+            logger.info("User genre profiles built successfully")
             return self.user_profiles, self.genre_cols
             
         except Exception as e:
+            logger.error(f"Error building user genre profiles: {str(e)}")
             raise RuntimeError(f"Error building user genre profiles: {str(e)}")
     
     def build_movie_genre_vectors(self, movie_vectors_path: str = "models/movie_vectors.pkl"
@@ -179,43 +203,54 @@ class ContentBasedFiltering:
             DataFrame representing movie feature vectors
         """
         try:
+            # logger.info("Starting to build movie genre vectors")
             # Load movies in batches
             offset = 0
             all_movie_data = []
             
             while True:
+                # logger.info(f"Loading movie batch at offset {offset}")
                 movies_df = self.db_manager.load_movies(limit=self.batch_size, offset=offset)
                 if movies_df.empty or offset > 100000:
+                    # logger.info("Finished loading movie data")
                     break
                     
                 # Process genres
+                # logger.info("Processing genres for current batch")
                 movies_df["processed_genres"] = movies_df["genres"].apply(self.process_genres)
                 all_movie_data.append(movies_df)
                 
                 offset += self.batch_size
-                print(f"Processed {offset} movie records")
+                # logger.info(f"Processed {offset} movie records")
             
             # Combine all batches
+            # logger.info("Combining all movie batches")
             movies_df = pd.concat(all_movie_data, ignore_index=True)
             
             # Create genre columns
+            # logger.info("Creating genre columns for movies")
             for col in self.genre_cols:
                 genre = col.replace("genre_", "")
                 movies_df[col] = movies_df["processed_genres"].apply(lambda x: int(genre in x))
             
             # Create movie vectors
+            # logger.info("Creating movie vectors")
             self.movie_vectors = movies_df.set_index("movie_id")[self.genre_cols]
             
             # Normalize movie vectors
+            # logger.info("Normalizing movie vectors")
             row_sums = self.movie_vectors.sum(axis=1)
             self.movie_vectors = self.movie_vectors.div(row_sums, axis=0).fillna(0)
             
             # Save vectors
+            # logger.info(f"Saving movie vectors to {movie_vectors_path}")
             self.movie_vectors.to_pickle(movie_vectors_path)
             
+            logger.info("Movie genre vectors built successfully")
             return self.movie_vectors
             
         except Exception as e:
+            logger.error(f"Error building movie genre vectors: {str(e)}")
             raise RuntimeError(f"Error building movie genre vectors: {str(e)}")
     
     def train(self) -> Dict[str, Any]:
@@ -226,23 +261,33 @@ class ContentBasedFiltering:
             Dictionary containing the trained model
         """
         try:
+            logger.info("Starting content-based filtering model training")
+            
             # Build user and movie profiles
+            logger.info("Building user genre profiles")
             self.build_user_genre_profiles()
+            
+            logger.info("Building movie genre vectors")
             self.build_movie_genre_vectors()
             
-            # Calculate similarity matrix
-            self.sim_matrix = cosine_similarity(self.movie_vectors)
+            # Instead of computing full similarity matrix, store normalized vectors
+            # and compute similarities on-demand
+            logger.info("Storing normalized movie vectors")
+            self.movie_vectors = self.movie_vectors.astype(np.float32)  # Reduce memory usage
             
             # Store model components
+            logger.info("Storing model components")
             self.model = {
-                "genre_sim": self.sim_matrix,
+                "movie_vectors": self.movie_vectors,  # Store normalized vectors instead of similarity matrix
                 "movie_ids": self.movie_vectors.index.tolist(),
                 "genre_mapping": self.genre_mapping
             }
             
+            logger.info("Content-based filtering model training completed successfully")
             return self.model
             
         except Exception as e:
+            logger.error(f"Error training content-based model: {str(e)}")
             raise RuntimeError(f"Error training content-based model: {str(e)}")
     
     def get_recommendations(self, movie_id: int, n_recommendations: int = 5) -> List[int]:
@@ -257,25 +302,44 @@ class ContentBasedFiltering:
             List of recommended movie IDs
         """
         try:
-            if self.sim_matrix is None or self.movie_ids is None:
+            logger.info(f"Getting recommendations for movie {movie_id}")
+            
+            if self.movie_vectors is None or self.movie_ids is None:
+                logger.error("Model not trained. Call train() first.")
                 raise ValueError("Model not trained. Call train() first.")
             
             # Find index of the movie
             try:
                 movie_idx = self.movie_ids.index(movie_id)
             except ValueError:
+                logger.error(f"Movie ID {movie_id} not found in training data")
                 raise ValueError(f"Movie ID {movie_id} not found in training data")
             
-            # Get similarity scores for the movie
-            sim_scores = self.sim_matrix[movie_idx]
+            # Get the target movie vector
+            target_vector = self.movie_vectors.iloc[movie_idx].values
+            
+            # Calculate similarities in batches to avoid memory issues
+            batch_size = 1000
+            similarities = []
+            
+            for i in range(0, len(self.movie_vectors), batch_size):
+                batch_vectors = self.movie_vectors.iloc[i:i+batch_size].values
+                batch_similarities = np.dot(batch_vectors, target_vector)
+                similarities.extend(batch_similarities)
+            
+            # Convert to numpy array for efficient sorting
+            similarities = np.array(similarities)
             
             # Get indices of top N similar movies (excluding self)
-            similar_indices = np.argsort(sim_scores)[::-1][1:n_recommendations+1]
+            logger.info("Finding top similar movies")
+            similar_indices = np.argsort(similarities)[::-1][1:n_recommendations+1]
             
             # Convert indices to movie IDs
             recommended_ids = [self.movie_ids[idx] for idx in similar_indices]
             
+            logger.info(f"Successfully generated {n_recommendations} recommendations")
             return recommended_ids
             
         except Exception as e:
+            logger.error(f"Error getting recommendations: {str(e)}")
             raise RuntimeError(f"Error getting recommendations: {str(e)}")

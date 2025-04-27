@@ -4,6 +4,7 @@ import logging
 from typing import Dict, List, Tuple, Optional
 from sklearn.metrics.pairwise import cosine_similarity
 from db.db_manager import DBManager
+import numpy as np
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -121,20 +122,19 @@ class HybridRecommender:
                 return {}
             
             # Get user's genre preferences
-            user_genres = self.user_profiles.loc[user_id]
+            user_genres = self.user_profiles.loc[user_id].values
             
-            # Get all movie vectors
-            movie_vectors = self.movie_vectors
-            
-            # Calculate similarity scores for all movies
+            # Calculate similarities in batches to avoid memory issues
+            batch_size = 1000
             scores = {}
-            for movie_id in movie_vectors.index:
-                # Calculate cosine similarity between user preferences and movie vector
-                similarity = cosine_similarity(
-                    user_genres.values.reshape(1, -1),
-                    movie_vectors.loc[movie_id].values.reshape(1, -1)
-                )[0][0]
-                scores[movie_id] = similarity
+            
+            for i in range(0, len(self.movie_vectors), batch_size):
+                batch_vectors = self.movie_vectors.iloc[i:i+batch_size]
+                batch_similarities = np.dot(batch_vectors.values, user_genres)
+                
+                # Store scores for this batch
+                for movie_id, score in zip(batch_vectors.index, batch_similarities):
+                    scores[movie_id] = score
             
             return scores
             
