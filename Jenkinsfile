@@ -19,7 +19,6 @@ pipeline {
                     env.DOCKER_NAME_TRAIN = (env.BRANCH_NAME == 'main') ? 'netflicks-train' : 'netflicks_test-train'
                     env.MODEL_VOLUME = (env.BRANCH_NAME == 'main') ? 'model_volume' : 'model_volume_test'
                     sh "echo 'Running on ${env.BRANCH_NAME}'"
-                    sh "echo 'Running on ${BRANCH_NAME}'"
 
                     sh """
                         # run cleanup
