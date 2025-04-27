@@ -3,7 +3,6 @@ import pandas as pd
 from db.db_manager import DBManager
 import numpy as np
 import mlflow
-import mlflow.sklearn  # We will use this to log a model-like object
 import os
 from dotenv import load_dotenv
 
@@ -224,7 +223,7 @@ class CollaborativeFiltering:
                 np.save("model_artifacts/item_factors.npy", model_info["item_factors"])
 
                 # Log artifacts
-                mlflow.log_artifacts("models/cf_model.pkl", artifact_path="model")
+                mlflow.log_artifacts("models/cf_model.pkl", artifact_path="cf_model")
             
                 print("Model logged to MLflow successfully.")
 
