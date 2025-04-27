@@ -112,7 +112,7 @@ class PopularityModel:
             mlflow.log_metric("num_popular_movies", len(self.popular_movie_ids))
 
             # Save the model file as an artifact
-            mlflow.log_artifact("models/popular_movies.pkl", artifact_path="model")
+            mlflow.log_artifact(self.model_path, artifact_path="model")
            
         return self.popular_movie_ids
     
