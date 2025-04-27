@@ -21,7 +21,6 @@ RUN pip install --no-cache-dir -r requirements.run.txt
 
 VOLUME ["/app/models"]
 
-# COPY models/ ./models/
 COPY api/server.py .
 COPY db/ db/
 COPY pipeline/ ./pipeline/

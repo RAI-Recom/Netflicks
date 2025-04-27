@@ -14,6 +14,7 @@ import ast
 import csv
 from datetime import datetime
 import pandas as pd
+import warnings
 
 class DBManager:
     """
@@ -43,6 +44,10 @@ class DBManager:
         self.conn = None
         self.cursor = None
         self.logger = self._setup_logger()
+        
+        # Suppress pandas DBAPI2 warning
+        warnings.filterwarnings('ignore', category=UserWarning, 
+                              message='pandas only supports SQLAlchemy connectable')
         
         # Connect to the database and create tables if they do not exist
         if self.connect():
@@ -837,7 +842,7 @@ class DBManager:
             SELECT w.user_id, w.movie_id, w.watched_minutes, m.title, m.genres
             FROM watch_history w
             JOIN movies m ON w.movie_id = m.movie_id
-            WHERE m.genres IS NOT NULL  -- Check if genres is not null
+            WHERE m.genres IS NOT NULL
             ORDER BY w.updated_at
         """
         
@@ -870,6 +875,7 @@ class DBManager:
             SELECT r.user_id, r.movie_id, r.rating, m.title, m.genres
             FROM ratings r
             JOIN movies m ON r.movie_id = m.movie_id
+            WHERE r.rating IS NOT NULL
             ORDER BY r.updated_at
             LIMIT {limit} OFFSET {offset};
         """
@@ -966,7 +972,7 @@ class DBManager:
             self.logger.error(f"Error loading evaluation watch history: {str(e)}")
             return pd.DataFrame()  # Return an empty DataFrame on error
 
-    def load_movies(self, limit: Optional[int] = 1000) -> pd.DataFrame:
+    def load_movies(self, limit: Optional[int] = 1000, offset: int = 0) -> pd.DataFrame:
         """
         Load movies from the database.
 
@@ -979,13 +985,12 @@ class DBManager:
         if not self.conn or self.conn.closed:
             self.connect()  # Ensure the connection is established
 
-        query = """
+        query = f"""
             SELECT movie_id, title, rating, votes, genres
             FROM movies
             WHERE rating IS NOT NULL AND votes IS NOT NULL
+            LIMIT {limit} OFFSET {offset};
         """
-        if limit:
-            query += f" LIMIT {limit};"
 
         try:
             self.cursor.execute(query)
