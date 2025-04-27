@@ -46,12 +46,14 @@ pipeline {
                         docker run --network=host \
                         --name ${env.DOCKER_NAME_TRAIN} \
                         -v ${env.MODEL_VOLUME}:/app/models \
+                        -v /home/Recomm-project/Netflicks/artifacts2:/home/Recomm-project/Netflicks/artifacts2 \
                         -e DB_USER=${DB_USER} \
                         -e MLFLOW_PORT=${MLFLOW_PORT} \
                         -e DB_PASSWORD=${DB_PASSWORD} \
                         -e HOST=${HOST} \
                         -e DB_PORT=${DB_PORT} \
                         -e DB_NAME=${DB_NAME} \
+                        -p ${env.MLFLOW_PORT}:${env.MLFLOW_PORT} \
                         ${env.DOCKER_NAME_TRAIN}
                     """
                     sh "docker rm ${env.DOCKER_NAME_TRAIN}"
