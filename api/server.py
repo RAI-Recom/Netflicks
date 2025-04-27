@@ -6,7 +6,7 @@ from loguru import logger
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 import time
 
-from pipeline.hybrid_recommend import hybrid_recommend
+from pipeline.hybrid_recommender import hybrid_recommend
 import os
 from dotenv import load_dotenv
 load_dotenv()
