@@ -225,7 +225,7 @@ class CollaborativeFiltering:
 
                 # Log artifacts
                 # mlflow.log_artifacts("model_artifacts")
-                mlflow.log_artifact(self.model_path, artifact_path="model")
+                mlflow.log_artifact(self)
                 # Optionally remove temp files
                 import shutil
                 shutil.rmtree("model_artifacts")
