@@ -203,7 +203,6 @@ class CollaborativeFiltering:
     
     def log_model_to_mlflow(self):
         try:
-       
             with mlflow.start_run(run_name="CollaborativeFiltering_Model"):
                 # Log parameters
                 mlflow.log_param("n_components", self.n_components)
@@ -213,14 +212,14 @@ class CollaborativeFiltering:
                 mlflow.log_metric("num_users", self.als.user_factors.shape[0])
                 mlflow.log_metric("num_items", self.als.item_factors.shape[0])
 
-                # Log model artifacts
-                # Save model manually, because it's a custom class
-                model_info = self.get_model_info()
+                # # Log model artifacts
+                # # Save model manually, because it's a custom class
+                # model_info = self.get_model_info()
 
-                # Save numpy arrays temporarily
-                os.makedirs("model_artifacts", exist_ok=True)
-                np.save("model_artifacts/user_factors.npy", model_info["user_factors"])
-                np.save("model_artifacts/item_factors.npy", model_info["item_factors"])
+                # # Save numpy arrays temporarily
+                # os.makedirs("model_artifacts", exist_ok=True)
+                # np.save("model_artifacts/user_factors.npy", model_info["user_factors"])
+                # np.save("model_artifacts/item_factors.npy", model_info["item_factors"])
 
                 # Log artifacts
                 mlflow.log_artifacts("models/cf_model.pkl", artifact_path="model")
