@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Start mlflow server in the background
-mlflow ui --host 0.0.0.0 --port 6001 --backend-store-uri file:/app/mlruns &
+# mlflow ui --host 0.0.0.0 --port 6001 --backend-store-uri file:/app/mlruns &
 
 # Wait a bit to make sure mlflow has started (optional but good practice)
 # sleep 5

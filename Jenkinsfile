@@ -104,7 +104,6 @@ pipeline {
                             echo "Service deployment completed. Health check pending."
                         fi
                     """
-                    sh "mlflow ui --port 6001"
                 }
             }
         }
