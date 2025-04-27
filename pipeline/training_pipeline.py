@@ -132,7 +132,7 @@ class TrainingPipeline:
             cb_model = self.content_based_filtering.train()
             
             # Validate model
-            if not isinstance(cb_model, dict) or "genre_sim" not in cb_model:
+            if not isinstance(cb_model, dict) or "movie_vectors" not in cb_model:
                 raise ValueError("Invalid content-based model format")
                 
             # Save model

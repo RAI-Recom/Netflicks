@@ -261,7 +261,7 @@ class ContentBasedFiltering:
             Dictionary containing the trained model
         """
         try:
-            # logger.info("Starting content-based filtering model training")
+            logger.info("Starting content-based filtering model training")
             
             # Build user and movie profiles
             logger.info("Building user genre profiles")
@@ -270,14 +270,15 @@ class ContentBasedFiltering:
             logger.info("Building movie genre vectors")
             self.build_movie_genre_vectors()
             
-            # Calculate similarity matrix
-            logger.info("Calculating similarity matrix")
-            self.sim_matrix = cosine_similarity(self.movie_vectors)
+            # Instead of computing full similarity matrix, store normalized vectors
+            # and compute similarities on-demand
+            logger.info("Storing normalized movie vectors")
+            self.movie_vectors = self.movie_vectors.astype(np.float32)  # Reduce memory usage
             
             # Store model components
-            # logger.info("Storing model components")
+            logger.info("Storing model components")
             self.model = {
-                "genre_sim": self.sim_matrix,
+                "movie_vectors": self.movie_vectors,  # Store normalized vectors instead of similarity matrix
                 "movie_ids": self.movie_vectors.index.tolist(),
                 "genre_mapping": self.genre_mapping
             }
@@ -303,7 +304,7 @@ class ContentBasedFiltering:
         try:
             logger.info(f"Getting recommendations for movie {movie_id}")
             
-            if self.sim_matrix is None or self.movie_ids is None:
+            if self.movie_vectors is None or self.movie_ids is None:
                 logger.error("Model not trained. Call train() first.")
                 raise ValueError("Model not trained. Call train() first.")
             
@@ -314,13 +315,24 @@ class ContentBasedFiltering:
                 logger.error(f"Movie ID {movie_id} not found in training data")
                 raise ValueError(f"Movie ID {movie_id} not found in training data")
             
-            # Get similarity scores for the movie
-            # logger.info("Calculating similarity scores")
-            sim_scores = self.sim_matrix[movie_idx]
+            # Get the target movie vector
+            target_vector = self.movie_vectors.iloc[movie_idx].values
+            
+            # Calculate similarities in batches to avoid memory issues
+            batch_size = 1000
+            similarities = []
+            
+            for i in range(0, len(self.movie_vectors), batch_size):
+                batch_vectors = self.movie_vectors.iloc[i:i+batch_size].values
+                batch_similarities = np.dot(batch_vectors, target_vector)
+                similarities.extend(batch_similarities)
+            
+            # Convert to numpy array for efficient sorting
+            similarities = np.array(similarities)
             
             # Get indices of top N similar movies (excluding self)
-            # logger.info("Finding top similar movies")
-            similar_indices = np.argsort(sim_scores)[::-1][1:n_recommendations+1]
+            logger.info("Finding top similar movies")
+            similar_indices = np.argsort(similarities)[::-1][1:n_recommendations+1]
             
             # Convert indices to movie IDs
             recommended_ids = [self.movie_ids[idx] for idx in similar_indices]
