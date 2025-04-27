@@ -365,7 +365,7 @@ class ContentBasedFiltering:
                 # Log model artifacts (the trained model components)
                 model_artifact_path = "models/cb_model.pkl"
                 
-                mlflow.log_artifacts(model_artifact_path, artifact_path="model")
+                mlflow.log_artifact(model_artifact_path, artifact_path="model")
                 
                 print("Model logged to MLflow successfully.")
 
