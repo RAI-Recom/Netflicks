@@ -125,7 +125,7 @@ import pickle
 from sklearn.metrics import mean_squared_error
 from tqdm import tqdm
 from db.db_manager import DBManager
-from pipeline.hybrid_recommend import hybrid_recommend, cf_model, movie_id_to_title
+from pipeline.hybrid_recommend import hybrid_recommend, cf_model, movie_id_to_title, user_profiles
 
 # Constants
 K = 40  # For Hit Rate@K
