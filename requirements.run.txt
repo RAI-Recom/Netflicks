@@ -7,3 +7,7 @@ sqlalchemy
 psycopg2-binary
 prometheus-client
 tqdm
+kafka-python
+pandas
+numpy
+psycopg2-binary
