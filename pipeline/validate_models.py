@@ -1,6 +1,5 @@
 import sys
 
-from pipeline.model_pipeline.popularity_model import PopularityModel
 sys.path.append('.')
 
 import logging
