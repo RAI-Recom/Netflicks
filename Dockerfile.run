@@ -28,3 +28,6 @@ COPY pipeline/ ./pipeline/
 COPY evaluation/ evaluation/
 
 CMD ["python", "server.py"]
+
+EXPOSE 5000
+
