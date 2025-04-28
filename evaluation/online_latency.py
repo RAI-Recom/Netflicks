@@ -12,7 +12,8 @@ from db.db_manager import DBManager
 from sklearn.metrics import mean_squared_error
 
 # --- CONFIGURATION ---
-API_ENDPOINT = "http://localhost:5000/recommend"  # Change if different
+API_ENDPOINT = "http://localhost:5000/recommend" 
+ # Change if different
 MAX_USERS = 10000  # Number of users to sample
 K = 20  # Number of recommendations to ask for
 TIMEOUT = 5  # seconds per API request
@@ -44,7 +45,7 @@ print("Starting API evaluation...")
 for user_id in tqdm(user_ids, desc="Querying API"):
     try:
         start_time = time.time()
-        response = requests.get(f"{API_ENDPOINT}/{user_id}", timeout=TIMEOUT)
+        response = requests.get(f"{API_ENDPOINT}/{user_id}")
         latency = time.time() - start_time
 
         latencies.append(latency)
