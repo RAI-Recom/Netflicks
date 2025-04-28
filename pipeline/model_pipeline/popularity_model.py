@@ -119,11 +119,11 @@ class PopularityModel:
             # It usually starts with "file://", so strip it
             artifact_path = artifact_uri.replace("file://", "")
 
-            # Build the config file path next to the artifact
-            config_path = os.path.join(os.path.dirname(artifact_path), "artifact_config.json")
+            artifact_dir = os.path.dirname(artifact_path)
+            artifacts_dir = os.path.dirname(artifact_dir)
+            run_dir = os.path.dirname(artifacts_dir) 
 
-            # Make sure the directory exists (it should, because the artifact is already there)
-            os.makedirs(os.path.dirname(config_path), exist_ok=True)
+            config_path = os.path.join(run_dir, "artifact_config.json")
 
             # Save the artifact URI into a JSON config
             config_data = {"artifact_uri": artifact_uri}
