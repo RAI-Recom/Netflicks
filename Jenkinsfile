@@ -206,6 +206,7 @@ scrape_configs:
                         docker run --rm \
                             --network=host \
                             -v ${env.MODEL_VOLUME}:/app/models \
+                            -e API_PORT=${env.API_PORT} \
                             -e DB_USER=${DB_USER} \
                             -e DB_PASSWORD=${DB_PASSWORD} \
                             -e HOST=${HOST} \
