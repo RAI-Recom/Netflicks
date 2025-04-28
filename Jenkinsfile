@@ -139,6 +139,7 @@ pipeline {
                         docker build -f Dockerfile.kafka -t netflicks_test-kafka-listener .
                         docker run --rm \
                             --network=host \
+                            -v ${env.MODEL_VOLUME}:/app/models \
                             -e DB_USER=${DB_USER} \
                             -e DB_PASSWORD=${DB_PASSWORD} \
                             -e HOST=${HOST} \
