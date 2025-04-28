@@ -10,9 +10,10 @@ import numpy as np
 from tqdm import tqdm
 from db.db_manager import DBManager
 from sklearn.metrics import mean_squared_error
-
+#8082 or 9092
 # --- CONFIGURATION ---
-API_ENDPOINT = "http://localhost:5000/recommend" 
+api_port = os.getenv('API_PORT', '5000')
+API_ENDPOINT = f"http://localhost:{api_port}/recommend"
  # Change if different
 MAX_USERS = 10000  # Number of users to sample
 K = 20  # Number of recommendations to ask for
