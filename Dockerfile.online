@@ -1,0 +1,16 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY requirements.run.txt .
+RUN pip install --no-cache-dir -r requirements.run.txt
+
+VOLUME ["/app/models"]
+
+COPY kafka_import/ kafka_import/
+COPY preprocessing/ preprocessing/
+COPY evaluation/ evaluation/
+COPY pipeline/ pipeline/
+COPY db/ db/
+
+CMD ["python", "evaluation/online_latency.py"]
