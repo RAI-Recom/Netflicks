@@ -1,10 +1,9 @@
 import pandas as pd
 import numpy as np
-import pickle
 from sklearn.metrics import mean_squared_error
 from tqdm import tqdm
 from db.db_manager import DBManager
-from pipeline.hybrid_recommend import hybrid_recommend, cf_model, movie_id_to_title, user_profiles
+from pipeline.hybrid_recommender import hybrid_recommend, recommender
 
 # Constants
 K = 30  # For Hit Rate@K
@@ -13,6 +12,7 @@ DEFAULT_PRED_RATING = 3.0  # fallback
 
 # Load all ratings
 db_manager = DBManager()
+
 # Step 1: Count total ratings
 n_total = db_manager.count_ratings()
 
@@ -25,8 +25,6 @@ ratings_df = db_manager.load_ratings_chunk(limit=n_test, offset=n_total - n_test
 # Step 4: Prepare
 ratings_df = ratings_df.dropna(subset=["rating"])
 
-#test_ratings = ratings_df.iloc[-n_test:]
-
 # Evaluation metrics
 actual_ratings = []
 predicted_ratings = []
@@ -36,14 +34,13 @@ total_users = 0
 # Group test ratings by user
 user_groups = ratings_df.groupby('user_id')
 
-
 for user_id, group in tqdm(user_groups, desc="Evaluating"):
-    '''Uncomment after training is done iteratively
+    # Optional filtering (uncomment if needed after full training)
+    '''
     if len(group) < 5:
-        continue  # skip users with too few ratings
+        continue
 
-    # Also: Skip if user_id not in training user list (optional, stricter)
-    if user_id not in user_profiles.index:
+    if user_id not in recommender.user_profiles.index:
         continue
     '''
     
@@ -54,7 +51,7 @@ for user_id, group in tqdm(user_groups, desc="Evaluating"):
     recommended_titles = hybrid_recommend(user_id, top_n=K)
     
     # Ground-truth titles
-    true_movie_titles = [movie_id_to_title.get(mid, f"Unknown Title ({mid})") for mid in true_movies]
+    true_movie_titles = [recommender.movie_id_to_title.get(mid, f"Unknown Title ({mid})") for mid in true_movies]
     
     # Check if any ground-truth movie is in top-K recommendations
     user_hit = any(title in recommended_titles for title in true_movie_titles)
@@ -65,7 +62,7 @@ for user_id, group in tqdm(user_groups, desc="Evaluating"):
     # RMSE computation
     for movie_id, true_rating in zip(true_movies, true_ratings):
         try:
-            pred = cf_model.predict(str(user_id), str(movie_id)).est
+            pred = recommender.cf_model["model"].predict(str(user_id), str(movie_id)).est
         except Exception:
             pred = DEFAULT_PRED_RATING  # fallback if prediction fails
         actual_ratings.append(true_rating)
@@ -79,6 +76,7 @@ hitrate = hits / total_users if total_users > 0 else 0.0
 print("\n=== Offline Evaluation ===")
 print(f"RMSE: {rmse:.4f}")
 print(f"Hit Rate@{K}: {hitrate:.4f}")
+
 
 
 '''
