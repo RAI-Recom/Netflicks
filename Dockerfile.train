@@ -13,4 +13,4 @@ RUN mkdir -p /app/models
 EXPOSE 6001
 EXPOSE 7001
 
-CMD ["python", "pipeline/train.py"]
+CMD ["python", "pipeline/training_pipeline.py"]
