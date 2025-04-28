@@ -317,7 +317,7 @@ if __name__ == "__main__":
             "user_profiles": "models/user_profiles.pkl",
             "movie_vectors": "models/movie_vectors.pkl",
             "popular_movies": popularity_artifact_uri,
-            "cf_model": cf_artifact_uri,
+            "cf_model": "models/cf_model.pkl",
             "cb_model": cb_artifact_uri,
         },
         "n_components": 50
