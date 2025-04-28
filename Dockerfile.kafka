@@ -11,4 +11,4 @@ COPY kafka_import/ kafka_import/
 COPY evaluation/ evaluation/
 COPY db/ db/
 
-CMD ["python", "evaluation/kafka_live.py"]
+CMD ["python", "evaluation/online_eval.py"]
