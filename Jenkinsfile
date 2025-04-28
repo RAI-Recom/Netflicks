@@ -128,7 +128,7 @@ scrape_configs:
   - job_name: 'movie_recommendation_service'
     static_configs:
       - targets:
-          - 'localhost:${env.API_PORT}'
+          - 'localhost:9090'
 """
 
 
