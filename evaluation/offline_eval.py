@@ -43,7 +43,8 @@ for user_id, group in tqdm(user_groups, desc="Evaluating"):
     if user_id not in recommender.user_profiles.index:
         continue
     '''
-    
+    if len(group) < 2:
+        continue
     true_movies = group['movie_id'].tolist()
     true_ratings = group['rating'].tolist()
     
@@ -66,6 +67,7 @@ for user_id, group in tqdm(user_groups, desc="Evaluating"):
         except Exception:
             pred = DEFAULT_PRED_RATING  # fallback if prediction fails
         actual_ratings.append(true_rating)
+        pred = min(max(pred, 1.0), 5.0)
         predicted_ratings.append(pred)
 
 # Final metrics
