@@ -128,7 +128,7 @@ scrape_configs:
   - job_name: 'movie_recommendation_service'
     static_configs:
       - targets:
-          - 'localhost:9092'
+          - '131.193.32.150:9092'
 """
 
 
