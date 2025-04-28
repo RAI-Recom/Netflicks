@@ -158,12 +158,14 @@ scrape_configs:
                 script {
                     sh "docker stop grafana || true"
                     sh "docker rm -f grafana || true"
+                    sh "docker volume create grafana_data || true"
 
                     sh """
                     docker run -d \
                     --name grafana \
                     -p 3000:3000 \
                     --restart unless-stopped \
+                    -v grafana_data:/var/lib/grafana \
                     -e GF_SECURITY_ADMIN_USER=admin \
                     -e GF_SECURITY_ADMIN_PASSWORD=admin \
                     grafana/grafana
