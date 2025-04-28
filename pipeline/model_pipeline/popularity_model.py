@@ -124,7 +124,7 @@ class PopularityModel:
             os.makedirs(fixed_config_dir, exist_ok=True)
 
             # Set the config file name and path
-            config_path = os.path.join(fixed_config_dir, "artifact_config.json")
+            config_path = os.path.join(fixed_config_dir, "popularity_artifact_config.json")
 
             # Save the artifact URI into the config
             config_data = {"artifact_uri": artifact_uri}

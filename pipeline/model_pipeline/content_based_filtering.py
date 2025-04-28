@@ -8,6 +8,7 @@ import logging
 import mlflow
 import os
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
 MLFLOW_PORT = os.getenv("MLFLOW_PORT")
@@ -366,7 +367,22 @@ class ContentBasedFiltering:
                 model_artifact_path = "models/cb_model.pkl"
                 
                 mlflow.log_artifact(model_artifact_path, artifact_path="model")
-                
+                artifact_uri = mlflow.get_artifact_uri("model/cb_model.pkl")
+
+                artifact_path = artifact_uri.replace("file://", "")
+
+                fixed_config_dir = "/home/Recomm-project/Netflicks/artifacts2/path"
+                os.makedirs(fixed_config_dir, exist_ok=True)
+
+                config_path = os.path.join(fixed_config_dir, "cb_artifact_config.json")
+
+                config_data = {"artifact_uri": artifact_uri}
+
+                with open(config_path, "w") as f:
+                    json.dump(config_data, f, indent=4)
+
+                print(f"cb artifact config at: {config_path}")
+
                 print("Model logged to MLflow successfully.")
 
         except Exception as e:
