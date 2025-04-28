@@ -116,19 +116,22 @@ class PopularityModel:
             mlflow.log_artifact(self.model_path, artifact_path="model")
             artifact_uri = mlflow.get_artifact_uri(self.model_path)
 
-            # Define the path to the config file inside ./artifacts2
-            config_path = os.path.join("artifacts2", "artifact_config.json")
+            # It usually starts with "file://", so strip it
+            artifact_path = artifact_uri.replace("file://", "")
 
-            # Make sure the artifacts2 folder exists
+            # Build the config file path next to the artifact
+            config_path = os.path.join(os.path.dirname(artifact_path), "artifact_config.json")
+
+            # Make sure the directory exists (it should, because the artifact is already there)
             os.makedirs(os.path.dirname(config_path), exist_ok=True)
 
-            # Save the artifact URI into a JSON config file
+            # Save the artifact URI into a JSON config
             config_data = {"artifact_uri": artifact_uri}
 
             with open(config_path, "w") as f:
                 json.dump(config_data, f, indent=4)
 
-            print(f"Saved artifact URI to {config_path}")
+            print(f"Saved artifact URI next to the artifact: {config_path}")
 
         return self.popular_movie_ids
     
