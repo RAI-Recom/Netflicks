@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import json
 
 load_dotenv()
-MLFLOW_PORT = os.getenv("MLFLOW_PORT")
+MLFLOW_PORT = os.getenv("MLFLOW_PORT", "6001")
 mlflow.set_tracking_uri("http://0.0.0.0:"+MLFLOW_PORT)
 mlflow.set_experiment("Netflicks_Models")
 class PopularityModel:
@@ -114,7 +114,7 @@ class PopularityModel:
 
             # Save the model file as an artifact
             mlflow.log_artifact(self.model_path, artifact_path="model")
-            artifact_uri = mlflow.get_artifact_uri("popular_movies.pkl")
+            artifact_uri = mlflow.get_artifact_uri("model/popular_movies.pkl")
 
             # Remove "file://" to get the actual file system path
             artifact_path = artifact_uri.replace("file://", "")

@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import json
 
 load_dotenv()
-MLFLOW_PORT = os.getenv("MLFLOW_PORT")
+MLFLOW_PORT = os.getenv("MLFLOW_PORT", "6001")
 mlflow.set_tracking_uri("http://0.0.0.0:"+MLFLOW_PORT)
 mlflow.set_experiment("Netflicks_Models")
 
