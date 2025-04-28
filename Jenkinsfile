@@ -47,6 +47,7 @@ pipeline {
                         --name ${env.DOCKER_NAME_TRAIN} \
                         -v ${env.MODEL_VOLUME}:/app/models \
                         -v /home/Recomm-project/Netflicks/artifacts2:/home/Recomm-project/Netflicks/artifacts2 \
+                        -v /home/Recomm-project/Netflicks/artifacts1:/home/Recomm-project/Netflicks/artifacts1 \
                         -e DB_USER=${DB_USER} \
                         -e MLFLOW_PORT=${MLFLOW_PORT} \
                         -e DB_PASSWORD=${DB_PASSWORD} \
