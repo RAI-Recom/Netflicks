@@ -13,4 +13,4 @@ COPY evaluation/ evaluation/
 COPY pipeline/ pipeline/
 COPY db/ db/
 
-CMD ["python", "evaluation/online_eval.py"]
+CMD ["python", "evaluation/online_latency.py"]
