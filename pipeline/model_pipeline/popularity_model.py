@@ -4,6 +4,7 @@ import os
 from typing import List, Optional
 import mlflow
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
 MLFLOW_PORT = os.getenv("MLFLOW_PORT")
@@ -113,8 +114,21 @@ class PopularityModel:
 
             # Save the model file as an artifact
             mlflow.log_artifact(self.model_path, artifact_path="model")
-            PopularityModel.Popularity_artifact_uri = mlflow.get_artifact_uri(self.model_path)
-            print(f"Model saved to MLflow with artifact URI: {PopularityModel.Popularity_artifact_uri}")
+            artifact_uri = mlflow.get_artifact_uri("your_model_or_artifact_path")
+
+            # Define the path to the config file inside ./artifacts2
+            config_path = os.path.join("artifacts2", "artifact_config.json")
+
+            # Make sure the artifacts2 folder exists
+            os.makedirs(os.path.dirname(config_path), exist_ok=True)
+
+            # Save the artifact URI into a JSON config file
+            config_data = {"artifact_uri": artifact_uri}
+
+            with open(config_path, "w") as f:
+                json.dump(config_data, f, indent=4)
+
+            print(f"Saved artifact URI to {config_path}")
 
         return self.popular_movie_ids
     
