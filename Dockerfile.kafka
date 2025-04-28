@@ -8,6 +8,7 @@ RUN pip install --no-cache-dir -r requirements.kafka.txt
 VOLUME ["/app/models"]
 
 COPY kafka_import/ kafka_import/
+COPY preprocessing/ preprocessing/
 COPY evaluation/ evaluation/
 COPY db/ db/
 
