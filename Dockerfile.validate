@@ -1,0 +1,23 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first to leverage Docker cache
+COPY requirements.train.txt .
+RUN pip install --no-cache-dir -r requirements.train.txt
+
+# Copy only the necessary files for validation
+COPY pipeline/validate_models.py pipeline/
+COPY pipeline/model_pipeline/ pipeline/model_pipeline/
+COPY db/ db/
+
+# Set environment variables
+ENV PYTHONPATH=/app
+
+# Command to run validation
+CMD ["python", "pipeline/validate_models.py"] 
