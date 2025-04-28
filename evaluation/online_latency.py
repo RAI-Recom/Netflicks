@@ -22,11 +22,15 @@ DEFAULT_PRED_RATING = 3.0  # if needed later for RMSE
 # --- FETCH USERS ---
 print("Connecting to database...")
 db_manager = DBManager()
-ratings_df = db_manager.load_ratings_chunk(limit=None, offset=0)
+ratings_df = db_manager.load_ratings_chunk(limit=10000, offset=0)
 
 print(f"Loaded {len(ratings_df)} ratings")
 
-user_ids = ratings_df["user_id"].drop_duplicates().sample(n=MAX_USERS, random_state=42).tolist()
+#user_ids = ratings_df["user_id"].drop_duplicates().sample(n=MAX_USERS, random_state=42).tolist()
+user_pool = ratings_df["user_id"].drop_duplicates()
+n_users = min(MAX_USERS, len(user_pool))
+
+user_ids = user_pool.sample(n=n_users, random_state=42).tolist()
 
 print(f"Selected {len(user_ids)} random users for evaluation")
 
