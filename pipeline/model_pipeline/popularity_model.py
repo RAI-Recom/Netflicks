@@ -114,7 +114,7 @@ class PopularityModel:
 
             # Save the model file as an artifact
             mlflow.log_artifact(self.model_path, artifact_path="model")
-            artifact_uri = mlflow.get_artifact_uri("your_model_or_artifact_path")
+            artifact_uri = mlflow.get_artifact_uri(self.model_path)
 
             # Define the path to the config file inside ./artifacts2
             config_path = os.path.join("artifacts2", "artifact_config.json")
