@@ -116,22 +116,23 @@ class PopularityModel:
             mlflow.log_artifact(self.model_path, artifact_path="model")
             artifact_uri = mlflow.get_artifact_uri("model/popular_movies.pkl")
 
-            # It usually starts with "file://", so strip it
+            # Remove "file://" to get the actual file system path
             artifact_path = artifact_uri.replace("file://", "")
 
-            artifact_dir = os.path.dirname(artifact_path)
-            artifacts_dir = os.path.dirname(artifact_dir)
-            run_dir = os.path.dirname(artifacts_dir) 
+            # Set your fixed path
+            fixed_config_dir = "/home/Recomm-project/Netflicks/artifacts2/path"
+            os.makedirs(fixed_config_dir, exist_ok=True)
 
-            config_path = os.path.join(run_dir, "artifact_config.json")
+            # Set the config file name and path
+            config_path = os.path.join(fixed_config_dir, "artifact_config.json")
 
-            # Save the artifact URI into a JSON config
+            # Save the artifact URI into the config
             config_data = {"artifact_uri": artifact_uri}
 
             with open(config_path, "w") as f:
                 json.dump(config_data, f, indent=4)
 
-            print(f"Saved artifact URI next to the artifact: {config_path}")
+            print(f"Saved config at: {config_path}")
 
         return self.popular_movie_ids
     
