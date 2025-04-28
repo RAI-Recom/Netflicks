@@ -76,6 +76,29 @@ pipeline {
                 }
             }
         }
+
+        stage('Offline Evaluation') {
+            steps {
+                script {
+                // Build the offline-evaluation image
+                sh "docker build -f Dockerfile.offline -t netflicks_test-offline-testing ."
+
+                sh """
+                    docker run --rm \
+                        --network=host \
+                        -v ${env.MODEL_VOLUME}:/app/models \
+                        -e DB_USER=${DB_USER} \
+                        -e DB_PASSWORD=${DB_PASSWORD} \
+                        -e HOST=${HOST} \
+                        -e DB_PORT=${DB_PORT} \
+                        -e DB_NAME=${DB_NAME} \
+                        -e PYTHONPATH=/app \
+                        netflicks_test-offline-testing
+                """
+                }
+            }
+        }
+
         
         stage('Run Recommendation Service') {
             steps {
@@ -177,6 +200,26 @@ scrape_configs:
             }
         }
 
+        stage('Online Evaluation') {
+            steps {
+                script {
+                    sh """
+                        docker build -f Dockerfile.online -t netflicks_test-online .
+                        docker run --rm \
+                            --network=host \
+                            -v ${env.MODEL_VOLUME}:/app/models \
+                            -e API_PORT=${env.API_PORT} \
+                            -e DB_USER=${DB_USER} \
+                            -e DB_PASSWORD=${DB_PASSWORD} \
+                            -e HOST=${HOST} \
+                            -e DB_PORT=${DB_PORT} \
+                            -e DB_NAME=${DB_NAME} \
+                            -e PYTHONPATH=/app \
+                            netflicks_test-online
+                    """
+                }
+            }
+        }
         // stage('Cleanup') {
         //     steps {
         //         script {
