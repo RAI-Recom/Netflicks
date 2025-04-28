@@ -69,6 +69,7 @@ pipeline {
                         docker run --network=host \
                         --name ${env.DOCKER_NAME_VALIDATE} \
                         -v ${env.MODEL_VOLUME}:/app/models \
+                        -v /home/Recomm-project/Netflicks/artifacts2:/home/Recomm-project/Netflicks/artifacts2 \
                         -e DB_USER=${DB_USER} \
                         -e DB_PASSWORD=${DB_PASSWORD} \
                         -e HOST=${HOST} \

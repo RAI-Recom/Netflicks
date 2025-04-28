@@ -303,7 +303,7 @@ if __name__ == "__main__":
             "cb_model": "models/cb_model.pkl",
             "user_profiles": "models/user_profiles.pkl",
             "movie_vectors": "models/movie_vectors.pkl",
-            "popular_movies": "models/popular_movies.pkl"
+            "popular_movies": PopularityModel.Popularity_artifact_uri
         },
         "n_components": 50
     }
