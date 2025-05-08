@@ -41,7 +41,7 @@ def recommend_movies(user_id):
     REQUEST_COUNT_BY_USER.labels(segment=segment).inc()
 
     try:
-        result = hybrid_recommend(user_id, 20)  # No need to change this
+        result = hybrid_recommend(user_id, 20)
         latency = time.time() - start_time
         REQUEST_LATENCY.observe(latency)
         RECOMMENDATION_COUNT.observe(len(result))
