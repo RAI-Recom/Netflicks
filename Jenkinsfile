@@ -66,8 +66,9 @@ pipeline {
                             export DVC_IGNORE_PERMISSION_ERRORS=1
                             dvc add data_backup.csv
                             git add data_backup.csv.dvc
-                            git commit -m "Updated data.csv with new changes" > commit_log.txt 2>&1 || echo "Nothing to commit" > commit_log.txt
-                            echo "Commit Log: " && cat commit_log.txt
+                            git commit -m "Updated data.csv with new changes" || echo "No changes to commit"
+                            git rev-parse HEAD > commit_log.txt
+                            echo "Commit SHA: $(cat commit_log.txt)"
                         '''
                         sh "chmod 777 /home/Recomm-project/datav/commit_log.txt"
                     }
