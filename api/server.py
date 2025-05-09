@@ -89,6 +89,6 @@ def log_file_contents():
 
 
 if __name__ == '__main__':
-    logger.add("api.log")
+    logger.add("/home/Recomm-project/Netflicks/logs/api.log")
     log_file_contents()
     app.run(host='0.0.0.0', port=os.getenv('API_PORT', '5000'))

@@ -112,6 +112,7 @@ pipeline {
                             --restart unless-stopped \
                             --network host \
                             -v ${env.MODEL_VOLUME}:/app/models \
+                            -v /home/Recomm-project/Netflicks/logs/:/home/Recomm-project/Netflicks/logs/ \
                             -e DB_USER='${DB_USER}' \
                             -e DB_PASSWORD='${DB_PASSWORD}' \
                             -e HOST='${HOST}' \
