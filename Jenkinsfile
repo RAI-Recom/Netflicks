@@ -69,6 +69,7 @@ pipeline {
                             git commit -m "Updated data.csv with new changes" > commit_log.txt 2>&1 || echo "Nothing to commit" > commit_log.txt
                             echo "Commit Log: " && cat commit_log.txt
                         '''
+                        sh "chmod 777 /home/Recomm-project/datav/commit_log.txt"
                     }
                 }
             }
