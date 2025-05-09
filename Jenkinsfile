@@ -61,6 +61,7 @@ pipeline {
 
                     dir("/home/Recomm-project/datav") {
                         sh '''
+                            export DVC_IGNORE_PERMISSIONS=1
                             dvc add data.csv
                             git add data.csv.dvc
                             git commit -m "Updated data.csv with new changes" || echo "Nothing to commit"
