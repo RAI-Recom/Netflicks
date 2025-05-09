@@ -41,7 +41,7 @@ def export_all_tables_to_csv():
 
     for (table_name,) in tables:
         print(f"Loading: {table_name}")
-        df = pd.read_sql_query(f"SELECT * FROM {table_name} LIMIT 10000", conn)
+        df = pd.read_sql_query(f"SELECT * FROM {table_name} LIMIT 15000", conn)
         df['table_name'] = table_name  # Optional: track source table
 
         # Replace all actual NaN/None values with the string 'null'
