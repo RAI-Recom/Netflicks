@@ -48,7 +48,7 @@ pipeline {
                         -v ${env.MODEL_VOLUME}:/app/models \
                         -v /home/Recomm-project/Netflicks/artifacts2:/home/Recomm-project/Netflicks/artifacts2 \
                         -v /home/Recomm-project/Netflicks/artifacts1:/home/Recomm-project/Netflicks/artifacts1 \
-                        -v /home/Recomm-project/datav:/home/Recomm-project/datav \
+                        -v /home/Recomm-project/datav:/app
                         -e DB_USER=${DB_USER} \
                         -e MLFLOW_PORT=${MLFLOW_PORT} \
                         -e DB_PASSWORD=${DB_PASSWORD} \
@@ -62,6 +62,7 @@ pipeline {
 
                     dir("/home/Recomm-project/datav") {
                         sh '''
+                            export DVC_IGNORE_PERMISSION_ERRORS=1
                             dvc add data_backup.csv
                             git add data_backup.csv.dvc
                             git commit -m "Updated data.csv with new changes" || echo "Nothing to commit"
