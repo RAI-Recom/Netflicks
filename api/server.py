@@ -9,6 +9,8 @@ import time
 from pipeline.hybrid_recommender import hybrid_recommend
 import os
 from dotenv import load_dotenv
+import json
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -57,7 +59,10 @@ def metrics():
 def log_file_contents():
     commit_log_path = '/home/Recomm-project/datav/commit_log.txt'
     cb_config_path = '/home/Recomm-project/Netflicks/artifacts2/path/cb_artifact_config.json'
+    popularity_config_path = '/home/Recomm-project/Netflicks/artifacts2/path/popularity_artifact_config.json'
+    cf_config_path = '/home/Recomm-project/Netflicks/artifacts2/path/cf_artifact_config.json'
 
+    # Log commit_log.txt
     try:
         with open(commit_log_path, 'r') as commit_file:
             commit_log = commit_file.read()
@@ -65,12 +70,23 @@ def log_file_contents():
     except Exception as e:
         logger.error("Failed to read commit_log.txt: {}", e)
 
-    try:
-        with open(cb_config_path, 'r') as config_file:
-            cb_config = config_file.read()
-            logger.info("Contents of cb_artifact_config.json:\n{}", cb_config)
-    except Exception as e:
-        logger.error("Failed to read cb_artifact_config.json: {}", e)
+    # Helper function to log artifact_uri
+    def log_artifact_uri(file_path, label):
+        try:
+            with open(file_path, 'r') as f:
+                data = json.load(f)
+                artifact_uri = data.get("artifact_uri", "Key 'artifact_uri' not found.")
+                logger.info("{} artifact_uri: {}", label, artifact_uri)
+        except Exception as e:
+            logger.error("Failed to read or parse {}: {}", label, e)
+
+    # Log all artifact config files
+    log_artifact_uri(cb_config_path, "CB Config")
+    log_artifact_uri(popularity_config_path, "Popularity Config")
+    log_artifact_uri(cf_config_path, "CF Config")
+
+
+
 
 if __name__ == '__main__':
     logger.add("api.log")
