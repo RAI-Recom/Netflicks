@@ -62,6 +62,7 @@ pipeline {
 
                     dir("/home/Recomm-project/datav") {
                         sh '''
+                            chmod o-w / || true
                             export HOME=/tmp
                             export DVC_IGNORE_PERMISSION_ERRORS=1
                             dvc add data_backup.csv
