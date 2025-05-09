@@ -77,7 +77,7 @@ pipeline {
         stage('Track CSV with DVC') {
             steps {
                 script {
-                    sh """docker build -t dvc-docker-image -f Dockerfile.dvc . """
+                    sh "docker build -t dvc-docker-image -f Dockerfile.dvc . "
                     sh """
                         docker run --rm \
                         -u $(id -u):$(id -g) \
