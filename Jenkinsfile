@@ -59,6 +59,12 @@ pipeline {
                     """
                     sh "docker rm ${env.DOCKER_NAME_TRAIN}"
 
+                    dir("/home/Recomm-project/Netflicks") {
+                        sh '''
+                            python dbtocsv.py
+                        '''
+                    }
+
                     dir("/home/Recomm-project/datav") {
                         sh '''
                             dvc add data_backup.csv
