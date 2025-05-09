@@ -58,6 +58,14 @@ pipeline {
                         ${env.DOCKER_NAME_TRAIN}
                     """
                     sh "docker rm ${env.DOCKER_NAME_TRAIN}"
+                    
+                    dir("/home/Recomm-project/datav") {
+                        sh '''
+                            dvc add data.csv
+                            git add data.csv.dvc
+                            git commit -m "Updated data.csv with new changes" || echo "Nothing to commit"
+                        '''
+                    }
                 }
             }
         }
