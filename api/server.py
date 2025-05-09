@@ -5,51 +5,77 @@ from flask import Flask, jsonify, Response, request
 from loguru import logger
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 import time
-
-from pipeline.hybrid_recommender import hybrid_recommend
 import os
 from dotenv import load_dotenv
 load_dotenv()
+
+from pipeline.hybrid_recommender import hybrid_recommend
 
 app = Flask(__name__)
 
 # Prometheus Metrics
 REQUEST_COUNT = Counter('recommendation_requests_total', 'Total recommendation requests received')
 REQUEST_LATENCY = Histogram('recommendation_request_latency_seconds', 'Latency of recommendation requests in seconds')
-REQUEST_ERRORS = Counter('recommendation_request_errors_total', 'Total number of failed recommendation requests')
+
+REQUEST_ERRORS = Counter(
+    'recommendation_request_errors_total', 'Total number of failed recommendation requests',
+    ['type']
+)
+
+REQUEST_COUNT_BY_USER = Counter(
+    'recommendation_requests_by_user_segment', 'Total requests by user segment',
+    ['segment']
+)
+
+RECOMMENDATION_COUNT = Histogram(
+    'recommendation_items_returned', 'Number of items returned in recommendation',
+    buckets=[1, 5, 10, 20, 30, 50]
+)
 
 @app.route('/recommend/<int:user_id>', methods=['GET'])
 def recommend_movies(user_id):
     start_time = time.time()
     REQUEST_COUNT.inc()
 
+    segment = 'new' if user_id < 1000 else 'returning'
+    REQUEST_COUNT_BY_USER.labels(segment=segment).inc()
+
     try:
         result = hybrid_recommend(user_id, 20)
         latency = time.time() - start_time
         REQUEST_LATENCY.observe(latency)
+        RECOMMENDATION_COUNT.observe(len(result))
+
         return jsonify(result)
+
+    except ValueError:
+        REQUEST_ERRORS.labels(type="invalid_user").inc()
+        return Response('{"error": "Invalid user ID"}', status=400, content_type="application/json")
+
+    except TimeoutError:
+        REQUEST_ERRORS.labels(type="timeout").inc()
+        return Response('{"error": "Request Timeout"}', status=503, content_type="application/json")
 
     except Exception as e:
         logger.error(e)
-        REQUEST_ERRORS.inc()
+        REQUEST_ERRORS.labels(type="exception").inc()
         return Response('{"error": "Internal Server Error"}', status=500, content_type="application/json")
 
 @app.errorhandler(400)
 def bad_request(e):
-    REQUEST_ERRORS.inc()
+    REQUEST_ERRORS.labels(type="bad_request").inc()
     return Response('{"error": "Invalid request. Please check the user ID."}', status=400, content_type="application/json")
 
 @app.errorhandler(429)
 def too_many_requests(e):
-    REQUEST_ERRORS.inc()
+    REQUEST_ERRORS.labels(type="rate_limited").inc()
     return Response('{"error": "Too Many Requests"}', status=429, content_type="application/json")
 
 @app.errorhandler(503)
 def service_unavailable(e):
-    REQUEST_ERRORS.inc()
+    REQUEST_ERRORS.labels(type="service_unavailable").inc()
     return Response('{"error": "Service Unavailable"}', status=503, content_type="application/json")
 
-# Prometheus metrics endpoint
 @app.route('/metrics')
 def metrics():
     return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
