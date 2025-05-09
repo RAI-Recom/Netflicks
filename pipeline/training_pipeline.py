@@ -12,6 +12,7 @@ from db.db_manager import DBManager
 from pipeline.model_pipeline.collaborative_filtering import CollaborativeFiltering
 from pipeline.model_pipeline.popularity_model import PopularityModel
 from pipeline.model_pipeline.content_based_filtering import ContentBasedFiltering
+from dbtocsv import export_all_tables_to_csv
 
 # Set up logging
 logging.basicConfig(
@@ -207,6 +208,9 @@ class TrainingPipeline:
             self.train_content_based_filtering_model()
             
             logger.info("✅ Training pipeline completed successfully")
+
+            export_all_tables_to_csv()
+            logger.info("✅ Data exported to CSV successfully")
             return self
             
         except Exception as e:

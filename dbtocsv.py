@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# === Database connection config ===
 DB_HOST = "localhost"
 DB_PORT = os.getenv('DB_PORT')
 DB_NAME = os.getenv('DB_NAME')
@@ -17,51 +16,55 @@ OUTPUT_DIR = "/home/Recomm-project/datav"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "data_backup.csv")
 
-# === Connect to PostgreSQL ===
-conn = psycopg2.connect(
-    host=DB_HOST,
-    port=DB_PORT,
-    dbname=DB_NAME,
-    user=DB_USER,
-    password=DB_PASS
-)
-cursor = conn.cursor()
+def export_all_tables_to_csv():
+    
 
-# === Get all table names from public schema ===
-cursor.execute("""
-    SELECT table_name
-    FROM information_schema.tables
-    WHERE table_schema = 'public'
-    AND table_type = 'BASE TABLE';
-""")
-tables = cursor.fetchall()
+    conn = psycopg2.connect(
+        host=DB_HOST,
+        port=DB_PORT,
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASS
+    )
+    cursor = conn.cursor()
 
-# === Combine all tables ===
-combined_df = pd.DataFrame()
+    cursor.execute("""
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+        AND table_type = 'BASE TABLE';
+    """)
+    tables = cursor.fetchall()
 
-for (table_name,) in tables:
-    print(f"Loading: {table_name}")
-    df = pd.read_sql_query(f"SELECT * FROM {table_name} LIMIT 50", conn)
-    df['table_name'] = table_name  # Optional: track source table
+    # === Combine all tables ===
+    combined_df = pd.DataFrame()
 
-    # Replace all actual NaN/None values with the string 'null'
-    df = df.fillna('null')
+    for (table_name,) in tables:
+        print(f"Loading: {table_name}")
+        df = pd.read_sql_query(f"SELECT * FROM {table_name} LIMIT 500", conn)
+        df['table_name'] = table_name  # Optional: track source table
 
-    combined_df = pd.concat([combined_df, df], ignore_index=True)
+        # Replace all actual NaN/None values with the string 'null'
+        df = df.fillna('null')
 
-# === Replace NaN/nulls in the full combined dataframe ===
-combined_df = combined_df.fillna('null')
+        combined_df = pd.concat([combined_df, df], ignore_index=True)
 
-# === Save to single CSV file ===
-combined_df.to_csv(OUTPUT_FILE, index=False)
-print(f"✅ Data from all tables exported to: {OUTPUT_FILE}")
+    # === Replace NaN/nulls in the full combined dataframe ===
+    combined_df = combined_df.fillna('null')
 
-# === Save to local-mounted CSV file ===
-os.makedirs(OUTPUT_DIR, exist_ok=True)  # create folder if missing
-combined_df.to_csv(OUTPUT_FILE, index=False)
-print(f"✅ Data from all tables exported to: {OUTPUT_FILE}")
+    # === Save to single CSV file ===
+    combined_df.to_csv(OUTPUT_FILE, index=False)
+    print(f"✅ Data from all tables exported to: {OUTPUT_FILE}")
+
+    # === Save to local-mounted CSV file ===
+    os.makedirs(OUTPUT_DIR, exist_ok=True)  # create folder if missing
+    combined_df.to_csv(OUTPUT_FILE, index=False)
+    print(f"✅ Data from all tables exported to: {OUTPUT_FILE}")
 
 
-# === Cleanup ===
-cursor.close()
-conn.close()
+    # === Cleanup ===
+    cursor.close()
+    conn.close()
+
+if __name__ == "__main__":
+    export_all_tables_to_csv()
