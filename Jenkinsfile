@@ -75,26 +75,26 @@ pipeline {
 
 
 
-        // stage('Validate Models') {
-        //     steps {
-        //         script {
-        //             sh "docker build -f Dockerfile.validate -t ${env.DOCKER_NAME_VALIDATE} ."
-        //             sh """
-        //                 docker run --network=host \
-        //                 --name ${env.DOCKER_NAME_VALIDATE} \
-        //                 -v ${env.MODEL_VOLUME}:/app/models \
-        //                 -v /home/Recomm-project/Netflicks/artifacts2:/home/Recomm-project/Netflicks/artifacts2 \
-        //                 -e DB_USER=${DB_USER} \
-        //                 -e DB_PASSWORD=${DB_PASSWORD} \
-        //                 -e HOST=${HOST} \
-        //                 -e DB_PORT=${DB_PORT} \
-        //                 -e DB_NAME=${DB_NAME} \
-        //                 ${env.DOCKER_NAME_VALIDATE}
-        //             """
-        //             sh "docker rm ${env.DOCKER_NAME_VALIDATE}"
-        //         }
-        //     }
-        // }
+        stage('Validate Models') {
+            steps {
+                script {
+                    sh "docker build -f Dockerfile.validate -t ${env.DOCKER_NAME_VALIDATE} ."
+                    sh """
+                        docker run --network=host \
+                        --name ${env.DOCKER_NAME_VALIDATE} \
+                        -v ${env.MODEL_VOLUME}:/app/models \
+                        -v /home/Recomm-project/Netflicks/artifacts2:/home/Recomm-project/Netflicks/artifacts2 \
+                        -e DB_USER=${DB_USER} \
+                        -e DB_PASSWORD=${DB_PASSWORD} \
+                        -e HOST=${HOST} \
+                        -e DB_PORT=${DB_PORT} \
+                        -e DB_NAME=${DB_NAME} \
+                        ${env.DOCKER_NAME_VALIDATE}
+                    """
+                    sh "docker rm ${env.DOCKER_NAME_VALIDATE}"
+                }
+            }
+        }
         
         stage('Run Recommendation Service') {
             steps {

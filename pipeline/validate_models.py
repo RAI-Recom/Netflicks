@@ -316,9 +316,9 @@ if __name__ == "__main__":
         "model_paths": {
             "user_profiles": "models/user_profiles.pkl",
             "movie_vectors": "models/movie_vectors.pkl",
-            "popular_movies": popularity_artifact_uri,
+            "popular_movies": "models/popular_movies.pkl",
             "cf_model": "models/cf_model.pkl",
-            "cb_model": cb_artifact_uri,
+            "cb_model": "models/cb_model.pkl",
         },
         "n_components": 50
     }
