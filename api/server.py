@@ -54,6 +54,25 @@ def service_unavailable(e):
 def metrics():
     return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
 
+def log_file_contents():
+    commit_log_path = '/home/Recomm-project/datav/commit_log.txt'
+    cb_config_path = '/home/Recomm-project/Netflicks/artifacts2/path/cb_artifact_config.json'
+
+    try:
+        with open(commit_log_path, 'r') as commit_file:
+            commit_log = commit_file.read()
+            logger.info("Contents of commit_log.txt:\n{}", commit_log)
+    except Exception as e:
+        logger.error("Failed to read commit_log.txt: {}", e)
+
+    try:
+        with open(cb_config_path, 'r') as config_file:
+            cb_config = config_file.read()
+            logger.info("Contents of cb_artifact_config.json:\n{}", cb_config)
+    except Exception as e:
+        logger.error("Failed to read cb_artifact_config.json: {}", e)
+
 if __name__ == '__main__':
     logger.add("api.log")
+    log_file_contents()
     app.run(host='0.0.0.0', port=os.getenv('API_PORT', '5000'))
