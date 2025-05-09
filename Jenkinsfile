@@ -48,6 +48,7 @@ pipeline {
                         -v ${env.MODEL_VOLUME}:/app/models \
                         -v /home/Recomm-project/Netflicks/artifacts2:/home/Recomm-project/Netflicks/artifacts2 \
                         -v /home/Recomm-project/Netflicks/artifacts1:/home/Recomm-project/Netflicks/artifacts1 \
+                        -v /home/Recomm-project/datav:/home/Recomm-project/datav \
                         -e DB_USER=${DB_USER} \
                         -e MLFLOW_PORT=${MLFLOW_PORT} \
                         -e DB_PASSWORD=${DB_PASSWORD} \
@@ -58,12 +59,6 @@ pipeline {
                         ${env.DOCKER_NAME_TRAIN}
                     """
                     sh "docker rm ${env.DOCKER_NAME_TRAIN}"
-
-                    dir("/home/Recomm-project/Netflicks") {
-                        sh '''
-                            python dbtocsv.py
-                        '''
-                    }
 
                     dir("/home/Recomm-project/datav") {
                         sh '''

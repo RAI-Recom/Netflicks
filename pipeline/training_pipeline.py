@@ -209,8 +209,8 @@ class TrainingPipeline:
             
             logger.info("✅ Training pipeline completed successfully")
 
-            # export_all_tables_to_csv()
-            # logger.info("✅ Data exported to CSV successfully")
+            export_all_tables_to_csv()
+            logger.info("✅ Data exported to CSV successfully")
             return self
             
         except Exception as e:
