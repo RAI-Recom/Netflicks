@@ -60,19 +60,41 @@ pipeline {
                     """
                     sh "docker rm ${env.DOCKER_NAME_TRAIN}"
 
-                    dir("/home/Recomm-project/datav") {
-                        sh '''
-                            chmod o-w / || true
-                            export HOME=/tmp
-                            export DVC_IGNORE_PERMISSION_ERRORS=1
-                            dvc add data_backup.csv
-                            git add data_backup.csv.dvc
-                            git commit -m "Updated data.csv with new changes" || echo "Nothing to commit"
-                        '''
-                    }
+                    // dir("/home/Recomm-project/datav") {
+                    //     sh '''
+                    //         chmod o-w / || true
+                    //         export HOME=/tmp
+                    //         export DVC_IGNORE_PERMISSION_ERRORS=1
+                    //         dvc add data_backup.csv
+                    //         git add data_backup.csv.dvc
+                    //         git commit -m "Updated data.csv with new changes" || echo "Nothing to commit"
+                    //     '''
+                    // }
                 }
             }
         }
+
+        stage('Track CSV with DVC') {
+            steps {
+                script {
+                    sh """docker build -t dvc-docker-image -f Dockerfile.dvc . """
+                    sh """
+                        docker run --rm \
+                        -u $(id -u):$(id -g) \
+                        -v /home/Recomm-project/datav:/workspace \
+                        -w /workspace \
+                        dvc-docker-image \
+                        /bin/bash -c '
+                            dvc config core.ignore_permission_errors true &&
+                            dvc add data_backup.csv &&
+                            git add data_backup.csv.dvc &&
+                            git commit -m "Updated data_backup.csv" || echo "Nothing to commit"
+                        '
+                    """
+                }
+            }
+        }
+
 
         // stage('Validate Models') {
         //     steps {
