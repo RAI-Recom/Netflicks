@@ -80,7 +80,7 @@ pipeline {
                     sh "docker build -t dvc-docker-image -f Dockerfile.dvc . "
                     sh """
                         docker run --rm \
-                        -u $(id -u):$(id -g) \
+                        -u \$(id -u):\$(id -g) \
                         -v /home/Recomm-project/datav:/workspace \
                         -w /workspace \
                         dvc-docker-image \
