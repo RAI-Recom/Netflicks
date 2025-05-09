@@ -11,6 +11,4 @@ COPY api/server.py .
 COPY db/ db/
 COPY pipeline/ ./pipeline/
 
-EXPOSE 5000
-
 CMD ["python", "server.py"]
