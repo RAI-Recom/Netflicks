@@ -113,6 +113,8 @@ pipeline {
                             --network host \
                             -v ${env.MODEL_VOLUME}:/app/models \
                             -v /home/Recomm-project/Netflicks/logs/:/home/Recomm-project/Netflicks/logs/ \
+                            -v /home/Recomm-project/Netflicks/artifacts1:/home/Recomm-project/Netflicks/artifacts1 \
+                            -v /home/Recomm-project/Netflicks/artifacts2:/home/Recomm-project/Netflicks/artifacts2 \
                             -v /home/Recomm-project/datav:/home/Recomm-project/datav \
                             -e DB_USER='${DB_USER}' \
                             -e DB_PASSWORD='${DB_PASSWORD}' \
