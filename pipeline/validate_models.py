@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append('.')
 
 import logging
@@ -7,6 +8,8 @@ import numpy as np
 from typing import Dict, Any, List
 import pandas as pd
 from db.db_manager import DBManager
+import json
+import os
 
 # Set up logging
 logging.basicConfig(
@@ -294,18 +297,32 @@ class ModelValidator:
             raise
 
 if __name__ == "__main__":
-    # Configuration
+    popularity_config_path = "/home/Recomm-project/Netflicks/artifacts2/path/popularity_artifact_config.json"
+    with open(popularity_config_path, "r") as f:
+        config = json.load(f)
+    popularity_artifact_uri = config.get("artifact_uri")
+    
+    cb_config_path = "/home/Recomm-project/Netflicks/artifacts2/path/cb_artifact_config.json"
+    with open(cb_config_path, "r") as f:
+        config = json.load(f)
+    cb_artifact_uri = config.get("artifact_uri")
+    
+    cf_config_path = "/home/Recomm-project/Netflicks/artifacts2/path/cf_artifact_config.json"
+    with open(cf_config_path, "r") as f:
+        config = json.load(f)
+    cf_artifact_uri = config.get("artifact_uri")
+    
     config = {
         "model_paths": {
-            "cf_model": "models/cf_model.pkl",
-            "cb_model": "models/cb_model.pkl",
             "user_profiles": "models/user_profiles.pkl",
             "movie_vectors": "models/movie_vectors.pkl",
-            "popular_movies": "models/popular_movies.pkl"
+            "popular_movies": "models/popular_movies.pkl",
+            "cf_model": "models/cf_model.pkl",
+            "cb_model": "models/cb_model.pkl",
         },
         "n_components": 50
     }
-    
+
     # Run validation
     validator = ModelValidator(config)
     results = validator.run_validation()

@@ -2,13 +2,19 @@ import pandas as pd
 import pickle
 import os
 from typing import List, Optional
+import mlflow
+from dotenv import load_dotenv
+import json
 
-
+load_dotenv()
+MLFLOW_PORT = os.getenv("MLFLOW_PORT", "6001")
+mlflow.set_tracking_uri("http://0.0.0.0:"+MLFLOW_PORT)
+mlflow.set_experiment("Netflicks_Models")
 class PopularityModel:
     """
     A class for computing and managing movie popularity models based on Bayesian average ranking.
     """
-    
+    Popularity_artifact_uri = None
     def __init__(self, top_n: int = 50, model_path: str = "models/popular_movies.pkl"):
         """
         Initialize the PopularityModel.
@@ -97,8 +103,37 @@ class PopularityModel:
         Returns:
             List of top N popular movie IDs
         """
-        self.compute_popularity_model(movie_df)
-        self.save_model()
+        with mlflow.start_run(run_name="Popularity_Model_Training"):
+            self.compute_popularity_model(movie_df)
+            self.save_model()
+
+            mlflow.log_param("top_n", self.top_n)
+
+            # Log metrics
+            mlflow.log_metric("num_popular_movies", len(self.popular_movie_ids))
+
+            # Save the model file as an artifact
+            mlflow.log_artifact(self.model_path, artifact_path="model")
+            artifact_uri = mlflow.get_artifact_uri("model/popular_movies.pkl")
+
+            # Remove "file://" to get the actual file system path
+            artifact_path = artifact_uri.replace("file://", "")
+
+            # Set your fixed path
+            fixed_config_dir = "/home/Recomm-project/Netflicks/artifacts2/path"
+            os.makedirs(fixed_config_dir, exist_ok=True)
+
+            # Set the config file name and path
+            config_path = os.path.join(fixed_config_dir, "popularity_artifact_config.json")
+
+            # Save the artifact URI into the config
+            config_data = {"artifact_uri": artifact_uri}
+
+            with open(config_path, "w") as f:
+                json.dump(config_data, f, indent=4)
+
+            print(f"Saved config at: {config_path}")
+
         return self.popular_movie_ids
     
     def get_popular_movies(self, movie_df: Optional[pd.DataFrame] = None) -> pd.DataFrame:

@@ -2,6 +2,15 @@ from scipy.sparse import csr_matrix
 import pandas as pd
 from db.db_manager import DBManager
 import numpy as np
+import mlflow
+import os
+from dotenv import load_dotenv
+import json
+
+load_dotenv()
+MLFLOW_PORT = os.getenv("MLFLOW_PORT", "6001")
+mlflow.set_tracking_uri("http://0.0.0.0:"+MLFLOW_PORT)
+mlflow.set_experiment("Netflicks_Models")
 
 class CustomALS:
     def __init__(self, n_components=50, regularization=0.01, learning_rate=0.1):
@@ -192,3 +201,37 @@ class CollaborativeFiltering:
             }
         except Exception as e:
             raise RuntimeError(f"Error getting model info: {str(e)}")
+    
+    def log_model_to_mlflow(self):
+        try:
+            with mlflow.start_run(run_name="CollaborativeFiltering_Model"):
+                # Log parameters
+                mlflow.log_param("n_components", self.n_components)
+                mlflow.log_param("random_state", self.random_state)
+
+                # Log metrics - example: how many users
+                mlflow.log_metric("num_users", self.als.user_factors.shape[0])
+                mlflow.log_metric("num_items", self.als.item_factors.shape[0])
+
+                # Log artifacts
+                mlflow.log_artifact("models/cf_model.pkl", artifact_path="model")
+                artifact_uri = mlflow.get_artifact_uri("model/cf_model.pkl")
+
+                artifact_path = artifact_uri.replace("file://", "")
+
+                fixed_config_dir = "/home/Recomm-project/Netflicks/artifacts2/path"
+                os.makedirs(fixed_config_dir, exist_ok=True)
+
+                config_path = os.path.join(fixed_config_dir, "cf_artifact_config.json")
+
+                config_data = {"artifact_uri": artifact_uri}
+
+                with open(config_path, "w") as f:
+                    json.dump(config_data, f, indent=4)
+
+                print(f"cf artifact config at: {config_path}")
+
+                print("Model logged to MLflow successfully.")
+
+        except Exception as e:
+            raise RuntimeError(f"Error logging model to MLflow: {str(e)}")

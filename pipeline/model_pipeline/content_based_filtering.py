@@ -5,6 +5,15 @@ from typing import Dict, List, Tuple, Any, Optional
 import re
 from db.db_manager import DBManager
 import logging
+import mlflow
+import os
+from dotenv import load_dotenv
+import json
+
+load_dotenv()
+MLFLOW_PORT = os.getenv("MLFLOW_PORT", "6001")
+mlflow.set_tracking_uri("http://0.0.0.0:"+MLFLOW_PORT)
+mlflow.set_experiment("Netflicks_Models")
 
 # Set up logging
 logging.basicConfig(
@@ -343,3 +352,38 @@ class ContentBasedFiltering:
         except Exception as e:
             logger.error(f"Error getting recommendations: {str(e)}")
             raise RuntimeError(f"Error getting recommendations: {str(e)}")
+        
+    def log_model_to_mlflow(self):
+        try:
+            with mlflow.start_run(run_name="ContentBasedFiltering_Model"):
+                # Log parameters (e.g., batch_size for loading data)
+                mlflow.log_param("batch_size", self.batch_size)
+
+                # Log the number of movies and users (metrics)
+                mlflow.log_metric("num_movies", len(self.movie_vectors))
+                mlflow.log_metric("num_users", len(self.user_profiles))
+
+                # Log model artifacts (the trained model components)
+                model_artifact_path = "models/cb_model.pkl"
+                
+                mlflow.log_artifact(model_artifact_path, artifact_path="model")
+                artifact_uri = mlflow.get_artifact_uri("model/cb_model.pkl")
+
+                artifact_path = artifact_uri.replace("file://", "")
+
+                fixed_config_dir = "/home/Recomm-project/Netflicks/artifacts2/path"
+                os.makedirs(fixed_config_dir, exist_ok=True)
+
+                config_path = os.path.join(fixed_config_dir, "cb_artifact_config.json")
+
+                config_data = {"artifact_uri": artifact_uri}
+
+                with open(config_path, "w") as f:
+                    json.dump(config_data, f, indent=4)
+
+                print(f"cb artifact config at: {config_path}")
+
+                print("Model logged to MLflow successfully.")
+
+        except Exception as e:
+            raise RuntimeError(f"Error logging model to MLflow: {str(e)}")

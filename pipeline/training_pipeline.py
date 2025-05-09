@@ -12,6 +12,7 @@ from db.db_manager import DBManager
 from pipeline.model_pipeline.collaborative_filtering import CollaborativeFiltering
 from pipeline.model_pipeline.popularity_model import PopularityModel
 from pipeline.model_pipeline.content_based_filtering import ContentBasedFiltering
+from dbtocsv import export_all_tables_to_csv
 
 # Set up logging
 logging.basicConfig(
@@ -139,8 +140,9 @@ class TrainingPipeline:
             self.save_model(cb_model, self.config["model_paths"]["cb_model"])
             
             logger.info("Content-based filtering model training complete")
+            self.content_based_filtering.log_model_to_mlflow()
             return self
-            
+
         except Exception as e:
             logger.error(f"Error training content-based model: {str(e)}")
             raise
@@ -163,7 +165,7 @@ class TrainingPipeline:
                 
             # Save model
             self.save_model(model_info, self.config["model_paths"]["cf_model"])
-            
+            cf_model.log_model_to_mlflow()
             logger.info("Collaborative filtering model training complete")
             return self
             
@@ -206,6 +208,9 @@ class TrainingPipeline:
             self.train_content_based_filtering_model()
             
             logger.info("✅ Training pipeline completed successfully")
+
+            export_all_tables_to_csv()
+            logger.info("✅ Data exported to CSV successfully")
             return self
             
         except Exception as e:
