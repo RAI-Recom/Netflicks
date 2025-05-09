@@ -6,6 +6,7 @@ RUN pip install --no-cache-dir -r requirements.train.txt
 
 COPY pipeline/ pipeline/
 COPY db/ db/
+COPY dbtocsv.py dbtocsv.py
 
 VOLUME ["/app/models"]
 RUN mkdir -p /app/models
