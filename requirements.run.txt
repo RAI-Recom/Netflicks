@@ -5,3 +5,8 @@ scikit-learn
 python-dotenv
 sqlalchemy
 psycopg2-binary
+prometheus-client
+tqdm
+requests
+numpy
+mlflow

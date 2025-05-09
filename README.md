@@ -18,7 +18,7 @@ The Netflicks recommendation system follows a microservices architecture with th
 - **Feature Engineering**: Creation of user and movie embeddings
 - **Model Training**: Training of recommendation algorithms in `model_training/`
 - **Model Storage**: Trained models are saved in the `models/` directory
-- **Model Evaluation**: Performance metrics and validation in `pipeline_testing/`
+- **Model Evaluation**: Performance metrics and validation in `pipeline/`
 
 ### 3. API Service
 - **Flask Server**: REST API implementation in `api/`
@@ -46,7 +46,7 @@ The Netflicks recommendation system follows a microservices architecture with th
 ├── kafka_import/       # Kafka integration for data streaming
 ├── model_training/     # Model training scripts
 ├── models/            # Trained model storage
-├── pipeline_testing/  # Testing utilities
+├── pipeline/  # Testing utilities
 ├── preprocessing/     # Data preprocessing scripts
 └── testing/          # Test files
 ```
