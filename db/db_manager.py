@@ -1020,3 +1020,10 @@ class DBManager:
         except Exception as e:
             self.logger.error(f"Error fetching movie title map: {str(e)}")
             return {}  # Return an empty dictionary on error
+    
+    def count_ratings(self):
+        query = "SELECT COUNT(*) FROM ratings"  # or whatever is your ratings table name
+        self.cursor.execute(query)
+        result = self.cursor.fetchone()
+        return result[0]
+    

@@ -98,6 +98,29 @@ pipeline {
                 }
             }
         }
+
+        stage('Offline Evaluation') {
+            steps {
+                script {
+                // Build the offline-evaluation image
+                sh "docker build -f Dockerfile.offline -t netflicks_test-offline-testing ."
+
+                sh """
+                    docker run --rm \
+                        --network=host \
+                        -v ${env.MODEL_VOLUME}:/app/models \
+                        -e DB_USER=${DB_USER} \
+                        -e DB_PASSWORD=${DB_PASSWORD} \
+                        -e HOST=${HOST} \
+                        -e DB_PORT=${DB_PORT} \
+                        -e DB_NAME=${DB_NAME} \
+                        -e PYTHONPATH=/app \
+                        netflicks_test-offline-testing
+                """
+                }
+            }
+        }
+
         
         stage('Run Recommendation Service') {
             steps {
@@ -154,7 +177,7 @@ scrape_configs:
   - job_name: 'movie_recommendation_service'
     static_configs:
       - targets:
-          - 'localhost:${env.API_PORT}'
+          - '131.193.32.150:${env.API_PORT}'
 """
 
 
@@ -184,12 +207,14 @@ scrape_configs:
                 script {
                     sh "docker stop grafana || true"
                     sh "docker rm -f grafana || true"
+                    sh "docker volume create grafana_data || true"
 
                     sh """
                     docker run -d \
                     --name grafana \
                     -p 3000:3000 \
                     --restart unless-stopped \
+                    -v grafana_data:/var/lib/grafana \
                     -e GF_SECURITY_ADMIN_USER=admin \
                     -e GF_SECURITY_ADMIN_PASSWORD=admin \
                     grafana/grafana
@@ -201,6 +226,26 @@ scrape_configs:
             }
         }
 
+        stage('Online Evaluation') {
+            steps {
+                script {
+                    sh """
+                        docker build -f Dockerfile.online -t netflicks_test-online .
+                        docker run --rm \
+                            --network=host \
+                            -v ${env.MODEL_VOLUME}:/app/models \
+                            -e API_PORT=${env.API_PORT} \
+                            -e DB_USER=${DB_USER} \
+                            -e DB_PASSWORD=${DB_PASSWORD} \
+                            -e HOST=${HOST} \
+                            -e DB_PORT=${DB_PORT} \
+                            -e DB_NAME=${DB_NAME} \
+                            -e PYTHONPATH=/app \
+                            netflicks_test-online
+                    """
+                }
+            }
+        }
         // stage('Cleanup') {
         //     steps {
         //         script {
