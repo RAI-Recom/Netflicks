@@ -202,10 +202,10 @@ class TrainingPipeline:
             self.train_popularity_model()
             
             logger.info("Training collaborative filtering model...")
-            # self.train_collaborative_filtering_model()
+            self.train_collaborative_filtering_model()
             
             logger.info("Training content-based filtering model...")
-            # self.train_content_based_filtering_model()
+            self.train_content_based_filtering_model()
             
             logger.info("✅ Training pipeline completed successfully")
 
