@@ -62,8 +62,8 @@ pipeline {
 
                     dir("/home/Recomm-project/datav") {
                         sh '''
-                            export DVC_IGNORE_PERMISSION_ERRORS=1
-                            dvc add data_backup.csv
+                            dvc config core.ignore_permission_errors true
+                            dvc add data_backup.csv --no-scm
                             git add data_backup.csv.dvc
                             git commit -m "Updated data.csv with new changes" || echo "Nothing to commit"
                         '''
